@@ -2,7 +2,12 @@ import "./articles.css";
 import { getArticles, deleteArticle, listenToStorage, getActiveStorage } from "../../utils/storage";
 import { Metadata } from "../../utils/utils";
 
-function articleToElement(key: string, article: Metadata): HTMLLIElement {
+function articleToElement(key: string, article: Metadata, storage: string): HTMLLIElement {
+  console.log(process.env.DEFAULT_STORAGE_API)
+  console.log(storage)
+  console.log(process.env.DEFAULT_STORAGE === storage)
+  console.log(`${process.env.MINT_PAGE}${article.cid}?title=${encodeURIComponent(article.title)}&description=${encodeURIComponent(article.excerpt)}`)
+  const displayMint = article.cid && process.env.DEFAULT_STORAGE_API === storage;
   const element = `
     <div class="article-header">
       <h2>${article.title}</h2> ${article.byline ? `<span>by: ${article.byline}</span>` : ''}
@@ -15,7 +20,16 @@ function articleToElement(key: string, article: Metadata): HTMLLIElement {
     <span>in ${article.lang}</span>
     </div>
     <a href="${chrome.runtime.getURL('preview.html')}?url=${encodeURIComponent(key)}" target="_blank" class="main">Read Article</a>
-    <button id="${key}" title="click to close" aria-label="click to close">x</button>
+    ${displayMint ? `
+        <a
+          href="${process.env.MINT_PAGE}${article.cid}?title=${encodeURIComponent(article.title)}&description=${encodeURIComponent(article.excerpt)}"
+          target="_blank"
+          class="main"
+        >
+          Mint
+        </a>` : ''
+    }
+    <button id="${key}" title="click to delete" aria-label="click to close">x</button>
   `;
   const root = document.createElement("li");
   root.innerHTML = element;
@@ -36,7 +50,7 @@ getActiveStorage().then((storage) => {
     const container = document.querySelector(".fullclick");
     const articlesArray = Array.from(articles.entries());
     articlesArray.forEach(([key, metadata]) => {
-      container?.appendChild(articleToElement(key, metadata));
+      container?.appendChild(articleToElement(key, metadata, storage.url));
     });
     if (articlesArray.length) {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -81,7 +95,7 @@ getActiveStorage().then((storage) => {
           } else if (oldValue.size < newValue.size) {
             newValue.forEach((value, key) => {
               if (!oldValue.has(key)) {
-                container?.appendChild(articleToElement(key, value));
+                container?.appendChild(articleToElement(key, value, storage.url));
               }
             });
           } else {
