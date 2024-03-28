@@ -6,15 +6,22 @@ import Button from '../components/Button'
 import abi from '../utils/abi'
 
 export default function Mint() {
-  const { signer } = useUserContext()
+  const { signer, targetNetwork } = useUserContext()
   const [id, setId] = useState<number>(0);
   const [minting, setMinting] = useState<boolean>(false)
   const [minted, setMinted] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
   const [contract, setContract] = useState<ethers.BaseContract>()
+  const [hash, setHash] = useState<string>()
 
   const { cid } = useParams();
-  let [searchParams, setSearchParams] = useSearchParams();
+  let [searchParams] = useSearchParams();
+
+  function removeHtmlSymbols(html: string) {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+  }
 
   let title = searchParams.get('title');
   if (title) {
@@ -23,12 +30,13 @@ export default function Mint() {
   let description = searchParams.get('description');
   if (description) {
     description = decodeURIComponent(description);
+    description = removeHtmlSymbols(description);
   }
 
   const fetchData = async () => {
     let localId = 0;
     try {
-      const raw = await fetch(`${import.meta.env.VITE_API_URL}/nft/id/${cid}`);
+      const raw = await fetch(`${import.meta.env.VITE_API_URL}nft/id/${cid}`);
       const json: { id: number } = await raw.json();
       setId(json.id);
       localId = json.id;
@@ -39,7 +47,7 @@ export default function Mint() {
     // if (!localId) return
     // let localmetadata
     // try {
-    //   const raw = await fetch(`http://localhost:8080/nft/metadata/${cid}`);
+    //   const raw = await fetch(`${import.meta.env.VITE_API_URL}metadata/${cid}`);
     //   localmetadata = await raw.json();
     //   console.log(localmetadata)
     // } catch (err) {
@@ -68,7 +76,7 @@ export default function Mint() {
 
         if (balance > 0) {
           console.log("already minted");
-          setMinted(true)
+          setMinted(true);
         }
       }
       balance();
@@ -93,16 +101,20 @@ export default function Mint() {
               <Button
                 onClick={async () => {
                   try {
-                    setMinting(true)
+                    setMinting(true);
                     //setMinted(false)
-                    setError('')
+                    setError('');
                     //@ts-ignore
-                    const tx = await contract.mint(id)
-                    await tx.wait()
-                    setMinted(true)
+                    const tx = await contract.mint(id);
+                    console.log('tx', tx);
+                    const receipt = await tx.wait();
+                    console.log('receipt', receipt);
+                    console.log('tx again', tx);
+                    setHash(tx.hash);
+                    setMinted(true);
                     try {
                       const raw = await fetch(
-                        'http://localhost:8080/nft',
+                        import.meta.env.VITE_API_URL + 'nft',
                         {
                           method: 'POST',
                           headers: {
@@ -116,13 +128,13 @@ export default function Mint() {
                       );
                       console.log(raw);
                     } catch (err) {
-                      console.log(err)
+                      console.log(err);
                     }
-                    console.log(tx)
+                    console.log(tx);
                   } catch (err) {
-                    console.log(err)
+                    console.log(err);
                   } finally {
-                    setMinting(false)
+                    setMinting(false);
                   }
                 }}
                 disabled={!signer || !contract || minting || minted}
@@ -151,8 +163,8 @@ export default function Mint() {
               </p>
               <div className="space-x-4">
                 <a
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                  href={`https://calibration.filfox.info/en/address/${signer?.address}`}
+                  className="inline-flex text-indigo-500 h-9 items-center justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
+                  href={`${targetNetwork.blockExplorerUrls[0]}en/${!!hash ? 'message' : 'address'}/${!!hash ? hash : signer?.address}`}
                   target="_blank"
                 >
                   Check in Block Explorer
