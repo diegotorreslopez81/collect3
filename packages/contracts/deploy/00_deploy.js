@@ -12,10 +12,10 @@ module.exports = async ({ deployments }) => {
 	const chainId = network.config.chainId
 	const tokenUri = networkConfig[chainId]["tokenUri"]
 
-	const simpleCoin = await deploy("Collect3", {
+	const Collect3 = await deploy("Collect3", {
 		from: wallet.address,
 		args: [tokenUri],
 		log: true,
 	})
-	console.log("SimpleCoin deployed to:", simpleCoin.address)
+	console.log("Collect3 deployed to:", Collect3.address)
 }
