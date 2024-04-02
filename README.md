@@ -186,7 +186,10 @@ we can start by installing the dependencies
   yarn install
 ```
 
-Copy the contents of the .env.example and create your .env
+Copy the contents of the .env.example and create your .env (to use our servers you can use the default .env)
+```bash
+  cp .env.example .env
+```
 
 Then you can build the extension
 ```sh
@@ -200,8 +203,8 @@ or you can execute this command if you are going to make changes to the code.
 [And finally you can install it this way](https://superuser.com/questions/247651/how-does-one-install-an-extension-for-chrome-browser-from-the-local-file-system/)
 
 ### :gear: Using Remote Server
-If you want to use an already available server instead of hosting your own
-you can.
+If you want to use an already available server instead of hosting your own you can,
+if you used the defaults in the .env.examplle you can skip the rest of steps.
 
 First you need to open the extension and click in the "My Storage" button,
 this will take you to a new page where you can manage your storage options,
