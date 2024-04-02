@@ -63,7 +63,7 @@ we can start by installing the dependencies
   yarn install
 ```
 
-Copy the contents of the .env.example and create your .env
+Copy the contents of the .env.example and create your .env (if you don't want to set your server use the defaults)
 
 Then you can build the extension
 ```sh
@@ -78,9 +78,9 @@ or you can execute this command if you are going to make changes to the code.
 
 ## :gear: Using Remote Server
 If you want to use an already available server instead of hosting your own
-you can.
+you can just use the defaults when building the extensions and you are good to go.
 
-First you need to open the extension and click in the "My Storage" button,
+If you want to add another server you need to open the extension and click in the "My Storage" button,
 this will take you to a new page where you can manage your storage options,
 to add a new one you just need the server url, an alias of your choice,
 and then you can click the "create storage option" button.
