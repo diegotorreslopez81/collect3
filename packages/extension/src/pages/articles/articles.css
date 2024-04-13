@@ -4,10 +4,12 @@ body {
   color: rgb(189 198 207);
   margin: 2em;
 }
+
 h1 {
   font-size: 1.2em;
   margin: 0 0 .5em 0;
 }
+
 h2 {
   font-size: 1.1em;
   margin: 0 0 .5em 0;
@@ -16,6 +18,7 @@ h2 {
 .title {
   text-align: left;
 }
+
 .fullclick {
   margin: 1em 0;
   padding: 0;
@@ -46,15 +49,6 @@ h2 {
   text-align: right;
   display: block;
   z-index: 1;
-}
-
-.fullclick li a.main::after {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  content: ' ';
 }
 
 .fullclick:hover a.main,
