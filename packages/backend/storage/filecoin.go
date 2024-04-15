@@ -119,8 +119,6 @@ func (storage filecoin) UploadFile(payload UploadFilePayload) (UploadFileRespons
 	if err != nil {
 		return UploadFileResponse{}, ErrorFailedToCreateClient
 	}
-	Logger.Info("Auth Header")
-	Logger.Info("Bearer " + storage.api_key)
 	req.Header.Set("Authorization", "Bearer "+storage.api_key)
 	req.Header.Set("Content-Type", "application/car")
 

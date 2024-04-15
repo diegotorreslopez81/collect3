@@ -91,6 +91,14 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
+	Logger.Info(
+		"Uploaded File",
+		slog.String(
+			"CID",
+			response.CID,
+		),
+	)
+
 	err = DB.UploadContent(payload.UID, response.CID, storageOption)
 	if err != nil {
 		if errors.Is(err, ErrDuplicate) {

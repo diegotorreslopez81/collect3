@@ -27,9 +27,11 @@ type Storage interface {
 const (
 	SiaOption      string = "sia"
 	FileCoinOption string = "filecoin"
+	FVMOption      string = "fvm"
 )
 
 var fileCoinApiKey string
+var FVMApiKey string
 var s5ApiKey string
 
 var (
@@ -55,6 +57,10 @@ func SetS5ApiKey(key string) {
 	s5ApiKey = key
 }
 
+func SetFVMApiKey(key string) {
+	FVMApiKey = key
+}
+
 // TODO: Iplement a timeout to all the storage calls
 func GetStorage(option string) (Storage, error) {
 	switch option {
@@ -65,6 +71,11 @@ func GetStorage(option string) (Storage, error) {
 			return nil, ErrorInvalidStorageOption
 		}
 		return GetFilecoin(fileCoinApiKey), nil
+	case FVMOption:
+		if FVMApiKey == "" {
+			return nil, ErrorInvalidStorageOption
+		}
+		return GetFVM(FVMApiKey), nil
 	default:
 		return nil, ErrorInvalidStorageOption
 	}

@@ -32,6 +32,11 @@ func main() {
 	if key != "" {
 		SetFileCoinApiKey(key)
 	}
+
+	key = GetEnvVar("LIGHTHOUSE_API_KEY")
+	if key != "" {
+		SetFVMApiKey(key)
+	}
 	key = GetEnvVar("ADMIN_S5_KEY")
 
 	if key == "" {

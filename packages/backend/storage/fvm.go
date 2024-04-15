@@ -11,22 +11,26 @@ import (
 	"net/http"
 )
 
-type s5 struct {
+type fvm struct {
 	api_key string
 }
 
-func GetS5(apiKey string) s5 {
-	return s5{api_key: apiKey}
+type fvmApiResponse struct {
+	Hash string `json:"Hash"`
 }
 
-func (storage s5) UploadFile(payload UploadFilePayload) (UploadFileResponse, error) {
-	var response UploadFileResponse
-	var body bytes.Buffer
-	var writer *multipart.Writer
-	var err error
+func GetFVM(apiKey string) fvm {
+	return fvm{api_key: apiKey}
+}
 
-	writer = multipart.NewWriter(&body)
-	part, err := writer.CreateFormFile("file", "article.txt")
+func (storage fvm) UploadFile(payload UploadFilePayload) (UploadFileResponse, error) {
+	var err error
+	var response UploadFileResponse
+	var filecoinResponse fvmApiResponse
+	var body bytes.Buffer
+
+	var writer *multipart.Writer = multipart.NewWriter(&body)
+	part, err := writer.CreateFormFile("file", "article.json")
 	if err != nil {
 		return UploadFileResponse{}, ErrorFailedToParseFile
 	}
@@ -38,12 +42,15 @@ func (storage s5) UploadFile(payload UploadFilePayload) (UploadFileResponse, err
 
 	writer.Close()
 
-	url := fmt.Sprintf("http://localhost:5050/s5/upload?auth_token=%s", payload.AuthToken)
+	url := "https://node.lighthouse.storage/api/v0/add"
 	req, err := http.NewRequest(http.MethodPost, url, &body)
 	if err != nil {
 		return UploadFileResponse{}, ErrorFailedToCreateClient
 	}
+	req.Header.Set("Authorization", "Bearer "+storage.api_key)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	var dealParameter = "{\"network\":\"calibration\"}"
+	req.Header.Set("X-Deal-Parameter", dealParameter)
 
 	res, err := http.DefaultClient.Do(req)
 
@@ -74,15 +81,18 @@ func (storage s5) UploadFile(payload UploadFilePayload) (UploadFileResponse, err
 		return UploadFileResponse{}, ErrorNonOkay
 	}
 
-	err = json.NewDecoder(res.Body).Decode(&response)
+	err = json.NewDecoder(res.Body).Decode(&filecoinResponse)
 	if err != nil {
 		return UploadFileResponse{}, ErrorFailedToReadResponse
+	}
+	response = UploadFileResponse{
+		CID: filecoinResponse.Hash,
 	}
 	return response, nil
 }
 
-func (storage s5) DownloadFile(payload DownloadFilePayload) (string, error) {
-	url := fmt.Sprintf("http://localhost:5050/s5/download/%s?auth_token=%s", payload.CID, payload.AuthToken)
+func (storage fvm) DownloadFile(payload DownloadFilePayload) (string, error) {
+	url := fmt.Sprintf("https://gateway.lighthouse.storage/ipfs/%s", payload.CID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", ErrorFailedToCreateClient
