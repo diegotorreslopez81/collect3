@@ -58,7 +58,11 @@ import { saveArticle, setToStorage } from './utils/storage';
           return undefined;
         }
         const key = 'preview';
-        const content = articleContentToHtml(response.article!.content, response.article!.title);
+        const content = articleContentToHtml(
+          response.article!.content,
+          response.article!.title,
+          response.article!.byline,
+        );
         await setToStorage(
           key,
           content,

@@ -1,6 +1,6 @@
 import { templateHtmlHead, templateHtmlMiddle, templateHtmlTail } from "./htmltemplate";
 
-export interface Article {
+export type Article = {
   title: string;
   content: string;
   textContent: string;
@@ -12,7 +12,7 @@ export interface Article {
   lang: string;
 }
 
-export interface Metadata {
+export type Metadata = {
   title: string;
   length: number; //duration in minutes
   excerpt: string; //description or extraction of the article
@@ -23,7 +23,7 @@ export interface Metadata {
   cid?: string;
 }
 
-export interface Storage {
+export type Storage = {
   alias: string;
   url: string;
   deleted: boolean;
@@ -86,10 +86,15 @@ export const isBase64 = (base64: string) => {
   return result;
 };
 
-export function articleContentToHtml(content: string, title: string): string {
+export function articleContentToHtml(content: string, title: string, byline: string): string {
   const html = `
     ${templateHtmlHead}
-      ${title}
+      <h1 class="__reading__mode__extracted__title c0011" id="mainContentTitle" >
+        ${title}
+      </h1>
+      <p>
+        by <span class="author byline">${byline}</span>
+      </p>
     ${templateHtmlMiddle}
       ${content}
     ${templateHtmlTail}
