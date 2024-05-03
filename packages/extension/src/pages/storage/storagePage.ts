@@ -21,7 +21,7 @@ function storageToElement(option: Storage, isActive: boolean): HTMLLIElement {
       ${option.url}
     </p>
     <div>
-      ${isActive ? "<span class=\"isActive\">isActive</span>" : ""}
+      ${isActive && option?.shouldSync ? "<span class=\"isActive\">isActive</span>" : ""}
     </div>
     <button
       title="click to make active"
