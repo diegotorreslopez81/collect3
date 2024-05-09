@@ -12,8 +12,13 @@ const CONNECT_TEXT = 'Connect';
 const CONNECTED_TEXT = 'Connected';
 
 export default function Layout() {
-  const [isCorrectNetwork, setCorrectNetwork] = useState<boolean>(false);
-  const { signer, setSigner, targetNetwork } = useUserContext()
+  const {
+    signer,
+    setSigner,
+    targetNetwork,
+    isCorrectNetwork,
+    setCorrectNetwork
+  } = useUserContext()
   const [buttonText, setButtonText] = useState(ONBOARD_TEXT);
   const [isDisabled, setDisabled] = useState(false);
   const [accounts, setAccounts] = useState<string[]>([]);
@@ -32,7 +37,7 @@ export default function Layout() {
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: targetNetwork.chainId }],
     });
-    setCorrectNetwork(true);
+    setCorrectNetwork!(true);
   }
 
   async function verifyNetwork() {
@@ -53,10 +58,10 @@ export default function Layout() {
       console.log(targetNetwork.chainId);
       if (chainId.toLowerCase() === targetNetwork.chainId) {
         console.log('correct network');
-        setCorrectNetwork(true);
+        setCorrectNetwork!(true);
       } else {
         console.log('wrong network');
-        setCorrectNetwork(false);
+        setCorrectNetwork!(false);
       }
     }
     checkNetwork();
@@ -144,7 +149,7 @@ export default function Layout() {
           {!isCorrectNetwork && (
             <Button
               onClick={verifyNetwork}
-              disabled={!!signer || isCorrectNetwork}
+              disabled={!signer || isCorrectNetwork}
             >
               Connect to Filecoin
             </Button>

@@ -34,11 +34,14 @@ const targetNetwork = envToNetWork[import.meta.env.VITE_ENV as 'prod' | 'dev'];
 type UserContextType = {
   signer: JsonRpcSigner | undefined,
   setSigner?: (signer: JsonRpcSigner) => void,
-  targetNetwork: typeof targetNetwork
+  targetNetwork: typeof targetNetwork,
+  isCorrectNetwork: boolean,
+  setCorrectNetwork?: (correctNetwork: boolean) => void
 };
 const initialValue: UserContextType = {
   signer: undefined,
-  targetNetwork
+  targetNetwork,
+  isCorrectNetwork: false
 };
 
 type props = {
@@ -49,10 +52,11 @@ const UserContext = createContext<UserContextType>(initialValue);
 
 export const UserProvider = ({ children }: props) => {
   const [signer, setSigner] = useState<JsonRpcSigner>();
+  const [isCorrectNetwork, setCorrectNetwork] = useState<boolean>(false);
 
   return (
     <UserContext.Provider
-      value={{ signer, setSigner, targetNetwork }}
+      value={{ signer, setSigner, targetNetwork, isCorrectNetwork, setCorrectNetwork }}
     >
       {children}
     </UserContext.Provider>

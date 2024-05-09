@@ -2,11 +2,13 @@ import { useUserContext } from '../context/userContext'
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Button from '../components/Button'
 import abi from '../utils/abi'
 
 export default function Mint() {
-  const { signer, targetNetwork } = useUserContext()
+  const { signer, targetNetwork, isCorrectNetwork } = useUserContext()
   const [id, setId] = useState<number>(0);
   const [minting, setMinting] = useState<boolean>(false)
   const [minted, setMinted] = useState<boolean>(false)
@@ -100,6 +102,9 @@ export default function Mint() {
               </div>
               <Button
                 onClick={async () => {
+                  if (!isCorrectNetwork) {
+                    return toast.error('Please switch to the correct network');
+                  }
                   try {
                     setMinting(true);
                     //setMinted(false)
@@ -174,6 +179,10 @@ export default function Mint() {
           )}
         </div>
       </div>
+      <ToastContainer
+        position='top-left'
+        autoClose={3000}
+      />
     </section>
   )
 }
