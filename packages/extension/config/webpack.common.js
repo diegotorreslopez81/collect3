@@ -2,6 +2,7 @@
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 
 const PATHS = require('./paths');
 
@@ -56,6 +57,13 @@ const common = {
   resolve: {
     // Help webpack resolve these extensions in order
     extensions: ['.ts', '.js'],
+    fallback: {
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer/'),
+    },
+    alias: {
+      process: 'process/browser',
+    },
   },
   plugins: [
     // Copy static assets from `public` folder to `build` folder
@@ -70,6 +78,9 @@ const common = {
     // Extract CSS into separate files
     new MiniCssExtractPlugin({
       filename: '[name].css',
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
     }),
   ],
 };

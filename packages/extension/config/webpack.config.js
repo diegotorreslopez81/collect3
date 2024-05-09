@@ -1,13 +1,14 @@
 'use strict';
 
 const { merge } = require('webpack-merge');
+const webpack = require('webpack');
 const Dotenv = require('dotenv-webpack');
 
 const common = require('./webpack.common.js');
 const PATHS = require('./paths');
 
 // Merge webpack configuration files
-const config = (env, argv) =>
+const config = (_, argv) =>
   merge(common, {
     entry: {
       popup: PATHS.src + '/popup.ts',
@@ -21,6 +22,9 @@ const config = (env, argv) =>
       new Dotenv({
         path: PATHS.src + '/../.env',
         safe: true,
+      }),
+      new webpack.ProvidePlugin({
+        process: 'process/browser',
       }),
     ],
     devtool: argv.mode === 'production' ? false : 'source-map',

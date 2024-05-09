@@ -1,18 +1,24 @@
+import { createExternalExtensionProvider } from "providers-fork";
 import "./storage.css";
 import {
   changeActiveStorage,
   createStorageOption,
   deleteStorageOption,
   getActiveStorage,
+  getFromStorage,
   getStorageOptions,
   listenToStorage,
+  setToStorage,
 } from "../../utils/storage";
-import { ACTIVE_STORAGE, Storage, STORAGE_OPTIONS } from "../../utils/utils";
+import { ACTIVE_STORAGE, ID_KEY, Storage, STORAGE_OPTIONS } from "../../utils/utils";
 import { isStorageAvailable, ping } from "../../utils/backend";
+import { ethers } from "ethers";
 
 let activeStorage;
 let reducedmotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 function storageToElement(option: Storage, isActive: boolean): HTMLLIElement {
+  console.log("option: ", option);
+  console.log("isActive: ", isActive);
   const element = `
     <div class="article-header">
       <h2>${option.alias}</h2>
@@ -21,16 +27,18 @@ function storageToElement(option: Storage, isActive: boolean): HTMLLIElement {
       ${option.url}
     </p>
     <div>
-      ${isActive && option?.shouldSync ? "<span class=\"isActive\">isActive</span>" : ""}
+      ${isActive ? "<span class=\"isActive\">isActive</span>" : ""}
     </div>
-    <button
-      title="click to make active"
-      aria-label="click to make active"
-      id="${option.url}--makeActive"
-      class="main"
-    >
-      Make Main Storage Option
-    </button>
+    ${!isActive ? `
+      <button
+        title="click to make active"
+        aria-label="click to make active"
+        id="${option.url}--makeActive"
+        class="main"
+      >
+        Make Main Storage Option
+      </button>
+    `: ""}
     <button
       id="${option.url}"
       class="delete-button"
@@ -161,6 +169,25 @@ const makeMainCallback = (container: Element | null, url: string, storageType: s
     newChild.textContent = "isActive";
     newChild.className = "isActive";
     child?.appendChild(newChild);
+    let id: string = await getFromStorage(ID_KEY);
+    if (!id) {
+      try {
+        const test = createExternalExtensionProvider();
+        console.log(test);
+        const provider = new ethers.BrowserProvider(test);
+        console.log(provider);
+        const signer = await provider.getSigner();
+        console.log(signer);
+        const address = await signer.getAddress();
+        console.log(address);
+        id = address;
+        await setToStorage(ID_KEY, id);
+      } catch (err) {
+        console.log(err);
+        return alert("Failed to get MetaMask Account");
+      }
+    }
+
     await changeActiveStorage(url, storageType, true);
   }
 };
@@ -176,7 +203,7 @@ Promise.all([
     }
     const element = storageToElement(
       option,
-      option.url === activeStorage.url && option.storageType == activeStorage.storageType,
+      option.url === activeStorage.url && option.storageType == activeStorage.storageType && Boolean(activeStorage?.shouldSync),
     );
     container?.appendChild(element);
     return element;

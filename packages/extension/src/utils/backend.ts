@@ -1,18 +1,8 @@
-import { v4 as secure } from '@lukeed/uuid/secure';
 import { getActiveStorage, getFromStorage, setArticleCID, setAuthToken, setToStorage } from './storage';
 import { ID_KEY, Metadata, Storage } from './utils';
 
-export const createUserUid = async (): Promise<string> => {
-  const id = secure();
-  await setToStorage(ID_KEY, id)
-  return id;
-};
-
 export const getUserUid = async (): Promise<string> => {
   let id = await getFromStorage(ID_KEY);
-  if (!id) {
-    id = createUserUid();
-  }
   return id;
 };
 
