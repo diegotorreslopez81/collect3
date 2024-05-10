@@ -12,7 +12,7 @@ services:
     #   retries: 3
 
     volumes:
-      - /config:/config
+      - ./config:/config
       - ./db:/db
     ports:
       - "5050:5050"
