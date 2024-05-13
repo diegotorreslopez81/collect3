@@ -28,7 +28,7 @@ export default function Layout() {
   async function addNetwork() {
     await window.ethereum?.request({
       method: 'wallet_addEthereumChain',
-      params: [targetNetwork],
+      params: [targetNetwork, signer?.address],
     });
   }
 
