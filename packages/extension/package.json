@@ -33,6 +33,8 @@
     "@mozilla/readability": "^0.4.4",
     "dotenv-webpack": "^8.0.1",
     "ethers": "^6.12.1",
+    "lighthouse-encryption-sdk-browser": "^0.1.6",
+    "lighthouse-package-fork": "^0.0.1",
     "providers-fork": "^16.1.1"
   }
 }

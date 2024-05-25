@@ -10,7 +10,7 @@ import {
   listenToStorage,
   setToStorage,
 } from "../../utils/storage";
-import { ACTIVE_STORAGE, ID_KEY, Storage, STORAGE_OPTIONS } from "../../utils/utils";
+import { ACTIVE_STORAGE, connectToMetamask, ID_KEY, Storage, STORAGE_OPTIONS } from "../../utils/utils";
 import { isStorageAvailable, ping } from "../../utils/backend";
 import { ethers } from "ethers";
 
@@ -172,15 +172,9 @@ const makeMainCallback = (container: Element | null, url: string, storageType: s
     let id: string = await getFromStorage(ID_KEY);
     if (!id) {
       try {
-        const test = createExternalExtensionProvider();
-        console.log(test);
-        const provider = new ethers.BrowserProvider(test);
-        console.log(provider);
-        const signer = await provider.getSigner();
-        console.log(signer);
-        const address = await signer.getAddress();
-        console.log(address);
-        id = address;
+        const signer = await connectToMetamask()
+        id = await signer.getAddress();
+        console.log(id);
         await setToStorage(ID_KEY, id);
       } catch (err) {
         console.log(err);

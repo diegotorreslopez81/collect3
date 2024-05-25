@@ -35,6 +35,11 @@ type NFTContent struct {
 	Content_CID string `db:"content_cid"`
 }
 
+type SharedContent struct {
+	User_ID     string `db:"user_id"`
+	Content_CID string `db:"content_cid"`
+}
+
 var (
 	ErrDuplicate    = errors.New("record already exists")
 	ErrNotExists    = errors.New("row not exists")
@@ -95,6 +100,16 @@ func (db *SQLiteRepository) Migrate() {
     );
   `
 
+	createSharedContentTable := `
+		CREATE TABLE IF NOT EXISTS shared_content(
+			user_id     INTEGER NOT NULL,
+			content_cid TEXT NOT NULL,
+			UNIQUE(user_id, content_cid),
+			FOREIGN KEY(user_id) REFERENCES user(id) ON DELETE CASCADE,
+			FOREIGN KEY(content_cid) REFERENCES content(cid) ON DELETE CASCADE
+		);
+	`
+
 	tx := db.db.MustBegin()
 
 	tx.MustExec(setPragma)
@@ -111,6 +126,9 @@ func (db *SQLiteRepository) Migrate() {
 
 	tx.MustExec(createNFTContentTable)
 	Logger.Info("setting nft_content table")
+
+	tx.MustExec(createSharedContentTable)
+	Logger.Info("setting shared_content table")
 
 	err := tx.Commit()
 	if err != nil {
@@ -368,6 +386,46 @@ func (db *SQLiteRepository) GetNFTByCid(cid string) (NFTContent, error) {
 	}
 	if err != nil {
 		return NFTContent{}, err
+	}
+	return content, nil
+}
+
+func (db *SQLiteRepository) SetSharedContent(cid string, uid string) error {
+	res, err := db.db.Exec("INSERT INTO shared_content(user_id, content_cid) values(?,?)", uid, cid)
+	if err != nil {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+				return ErrDuplicate
+			}
+		}
+		return err
+	}
+
+	_, err = res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *SQLiteRepository) DeleteSharedContent(uid string, cid string) error {
+	_, err := db.db.Exec("DELETE FROM shared_content WHERE user_id=? AND content_cid=?", uid, cid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *SQLiteRepository) GetSharedContentByUid(uid string) ([]SharedContent, error) {
+	var content []SharedContent
+	err := db.db.Get(&content, "SELECT * FROM shared_content WHERE user_id=?", uid)
+	if errors.Is(err, sql.ErrNoRows) {
+		return []SharedContent{}, nil
+	}
+	if err != nil {
+		return []SharedContent{}, err
 	}
 	return content, nil
 }

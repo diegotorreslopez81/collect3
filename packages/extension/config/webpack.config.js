@@ -16,6 +16,7 @@ const config = (_, argv) =>
       preview: PATHS.src + '/pages/preview/preview.ts',
       articles: PATHS.src + '/pages/articles/articles.ts',
       storage: PATHS.src + '/pages/storage/storagePage.ts',
+      share: PATHS.src + '/pages/share/share.ts',
       background: PATHS.src + '/background.ts',
     },
     plugins: [

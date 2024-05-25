@@ -1,5 +1,9 @@
-import { getActiveStorage, getFromStorage, setArticleCID, setAuthToken, setToStorage } from './storage';
+import { getAuthMessage, getJWT, saveShards } from 'lighthouse-encryption-sdk-browser';
+import { decryptFile, fetchEncryptionKey, shareFile } from 'lighthouse-package-fork';
+import { Signer } from 'ethers';
+import { getActiveStorage, getFromStorage, setArticleCID, setAuthToken } from './storage';
 import { ID_KEY, Metadata, Storage } from './utils';
+import { KeyShard } from 'lighthouse-encryption-sdk-browser/dist/types';
 
 export const getUserUid = async (): Promise<string> => {
   let id = await getFromStorage(ID_KEY);
@@ -157,3 +161,169 @@ export const downloadFile = async (cid: string, activeStorage?: Storage) => {
   }
   return await (await (raw.blob())).text();
 };
+
+export const getLightHouseJWT = async (signer: Signer): Promise<string> => {
+  const authMessage = await getAuthMessage(await signer.getAddress())
+  if (!authMessage?.message) {
+    throw new Error("Failed to get auth message")
+  }
+  const signedMessage = await signer.signMessage(authMessage.message)
+  const { JWT, error } = await getJWT(await signer.getAddress(), signedMessage)
+  return JWT;
+};
+
+export const encryptArticle = async (
+  storage: Storage,
+  url: string,
+  params: {
+    uid: string,
+    address: string,
+    jwt: string,
+    keyShards: KeyShard[],
+    encryptedData: {
+      [key: string]: string
+    },
+  }
+) => {
+  const { uid, address, jwt: auth_token, keyShards, encryptedData } = params
+  console.table(params);
+
+  if (auth_token.startsWith("0x")) {
+    throw new Error(JSON.stringify(`auth_token must be a JWT`));
+  }
+
+  const keys = Object.keys(encryptedData);
+  const parsed = new Uint8Array(keys.length);
+
+  for (let i = 0; i < keys.length; i++) {
+    const byte = encryptedData[i];
+    parsed[i] = parseInt(byte);
+  }
+
+  const data = new FormData()
+  const buff = new Blob([parsed], { type: "text/plain" })
+  console.log("encryptedData: ", encryptedData);
+  console.log("buff", buff);
+  data.append("file", buff, "article.txt")
+  data.append("auth_token", auth_token)
+  data.append("uid", uid)
+
+  const rawresponse = await fetch(`${storage.url}uploadEncrypted`, {
+    method: 'POST',
+    body: data,
+  });
+
+  if (rawresponse.status === 401) {
+    throw new Error("Invalid Token");
+  }
+  if (rawresponse.status !== 200) {
+    throw new Error("Something Went Wrong");
+  }
+
+  let response = await rawresponse.json();
+  console.log(response);
+
+  const savedKey = await saveShards(
+    address,
+    response.cid,
+    auth_token,
+    keyShards
+  );
+
+  if (!savedKey.isSuccess) {
+    throw new Error(JSON.stringify(savedKey));
+  }
+
+  console.log(
+    `Decrypt at https://decrypt.mesh3.network/evm/${response.cid}`
+  );
+
+  await setArticleCID(response.cid, url);
+
+  // return response
+  /*
+    {
+      cid: 'QmUHDKv3NNL1mrg4NTW4WwJqetzwZbGNitdjr2G6Z5Xe6s',
+      name: 'article.json',
+    }
+  */
+  return response;
+}
+
+export const encryptionSignature = async (signer: Signer) => {
+  const address = await signer.getAddress();
+  const messageRequested = (await getAuthMessage(address)).message;
+  if (!messageRequested) {
+    throw new Error("Failed to get auth message");
+  }
+  const signedMessage = await signer.signMessage(messageRequested);
+  return ({
+    signedMessage,
+    address,
+  });
+}
+
+export const decryptArticle = async (cid: string, signer: Signer) => {
+  // const cid = "QmVkbVeTGA7RHgvdt31H3ax1gW3pLi9JfW6i9hDdxTmcGK"; //replace with your IPFS CID
+  const { address, signedMessage } = await encryptionSignature(signer);
+  /*
+    fetchEncryptionKey(cid, publicKey, signedMessage)
+      Parameters:
+        CID: CID of the file to decrypt
+        publicKey: public key of the user who has access to file or owner
+        signedMessage: message signed by the owner of publicKey
+  */
+  const keyObject = await fetchEncryptionKey(
+    cid,
+    address,
+    signedMessage
+  );
+
+  if (!keyObject?.data?.key) {
+    console.log("keyObject", keyObject);
+    throw new Error(JSON.stringify(keyObject));
+  }
+  // Decrypt file
+  /*
+    decryptFile(cid, key, mimeType)
+      Parameters:
+        CID: CID of the file to decrypt
+        key: the key to decrypt the file
+        mimeType: default null, mime type of file
+  */
+
+  const fileType = "text/plain";
+  const decrypted = await decryptFile(cid, keyObject.data.key, fileType);
+  console.log("decrypted", decrypted);
+  /*
+    Response: blob
+  */
+  return decrypted;
+}
+
+export const shareEncrypted = async (cid: string, signer: Signer, targetAddress: string[]) => {
+  try {
+    const signedMessage = await getLightHouseJWT(signer);
+    const address = await signer.getAddress();
+
+    const shareResponse = await shareFile(
+      address,
+      targetAddress,
+      cid,
+      signedMessage
+    );
+    console.log(shareResponse)
+    /* Sample Response
+      {
+        data: {
+          cid: 'QmTsC1UxihvZYBcrA36DGpikiyR8ShosCcygKojHVdjpGd',
+          shareTo: [ '0x487fc2fE07c593EAb555729c3DD6dF85020B5160' ],
+          status: 'Success'
+        }
+      }
+    */
+    return shareResponse;
+  } catch (error) {
+    console.log(error);
+  }
+}

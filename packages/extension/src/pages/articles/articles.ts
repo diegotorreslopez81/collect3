@@ -1,13 +1,17 @@
 import "./articles.css";
 import { getArticles, deleteArticle, listenToStorage, getActiveStorage } from "../../utils/storage";
-import { Metadata } from "../../utils/utils";
+import { Metadata, Storage } from "../../utils/utils";
 
-function articleToElement(key: string, article: Metadata, storage: string): HTMLLIElement {
-  console.log(process.env.DEFAULT_STORAGE_API)
-  console.log(storage)
-  console.log(process.env.DEFAULT_STORAGE === storage)
-  console.log(`${process.env.MINT_PAGE}${article.cid}?title=${encodeURIComponent(article.title)}&description=${encodeURIComponent(article.excerpt)}`)
-  const displayMint = article.cid && process.env.DEFAULT_STORAGE_API === storage;
+function articleToElement(key: string, article: Metadata, storage: Storage): HTMLLIElement {
+  const displayMint = article.cid && process.env.DEFAULT_STORAGE_API === storage.url;
+  const displayShare = displayMint && storage.storageType === "fvmEncrypted" && !storage?.wasShared;
+  console.table({
+    displayMint,
+    displayShare,
+    Default: process.env.DEFAULT_STORAGE_API,
+    Url: storage.url,
+    cid: article.cid,
+  })
   const element = `
     <div class="article-header">
       <h2>${article.title}</h2> ${article.byline ? `<span>by: ${article.byline}</span>` : ''}
@@ -27,6 +31,15 @@ function articleToElement(key: string, article: Metadata, storage: string): HTML
           class="main"
         >
           Mint
+        </a>` : ''
+    }
+    ${displayShare ? `
+        <a
+          href="${chrome.runtime.getURL('share.html')}?cid=${encodeURIComponent(article.cid || '')}"
+          target="_blank"
+          class="main"
+        >
+          Share
         </a>` : ''
     }
     <button id="${key}" title="click to delete" aria-label="click to close">x</button>
@@ -50,7 +63,7 @@ getActiveStorage().then((storage) => {
     const container = document.querySelector(".fullclick");
     const articlesArray = Array.from(articles.entries());
     articlesArray.forEach(([key, metadata]) => {
-      container?.appendChild(articleToElement(key, metadata, storage.url));
+      container?.appendChild(articleToElement(key, metadata, storage));
     });
     if (articlesArray.length) {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -95,7 +108,7 @@ getActiveStorage().then((storage) => {
           } else if (oldValue.size < newValue.size) {
             newValue.forEach((value, key) => {
               if (!oldValue.has(key)) {
-                container?.appendChild(articleToElement(key, value, storage.url));
+                container?.appendChild(articleToElement(key, value, storage));
               }
             });
           } else {

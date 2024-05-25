@@ -1,8 +1,13 @@
 'use strict';
 
 import './popup.css';
-import { openPreview, openPage, articleContentToHtml, Article } from './utils/utils';
-import { saveArticle, setToStorage } from './utils/storage';
+import { openPreview, openPage, articleContentToHtml, Article, connectToMetamask } from './utils/utils';
+import { getActiveStorage, saveArticle, setToStorage } from './utils/storage';
+import { getLightHouseJWT, getUserUid } from './utils/backend';
+import { generate } from 'lighthouse-encryption-sdk-browser';
+import { encryptFile } from 'lighthouse-package-fork/dist/Lighthouse/uploadEncrypted/encryptionBrowser';
+import { KeyShard } from 'lighthouse-encryption-sdk-browser/dist/types';
+import Base64 from './utils/Base64';
 
 (function() {
   async function collect() {
@@ -31,7 +36,37 @@ import { saveArticle, setToStorage } from './utils/storage';
           message: 'Saving Article Locally',
           title: 'Info',
         })
-        await saveArticle(response.url, response.article);
+        const activeStorage = await getActiveStorage();
+
+        let encryptParams: {
+          uid: string,
+          address: string,
+          jwt: string,
+          fileEncryptionKey: string,
+          keyShards: KeyShard[],
+          encryptedData: Uint8Array,
+        } | undefined = undefined;
+        const encodedArticleContent = Base64.encode(response.article.content);
+        if (activeStorage.storageType === 'fvmEncrypted') {
+          console.log('fvmEncrypted')
+          const signer = await connectToMetamask();
+          const jwt = await getLightHouseJWT(signer);
+          const uid = await getUserUid();
+
+          const { masterKey: fileEncryptionKey, keyShards } = await generate();
+          const encoder = new TextEncoder()
+          const encryptedData = await encryptFile(encoder.encode(encodedArticleContent).buffer, fileEncryptionKey);
+          encryptParams = {
+            uid,
+            address: await signer.getAddress(),
+            jwt,
+            fileEncryptionKey: fileEncryptionKey || '',
+            keyShards,
+            encryptedData: encryptedData,
+          }
+          console.table(encryptParams)
+        }
+        await saveArticle(response.url, response.article, encodedArticleContent, encryptParams);
         await openPreview(response.url);
       }
     } catch (error) {

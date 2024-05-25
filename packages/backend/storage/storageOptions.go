@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"mime/multipart"
 )
 
 type UploadFilePayload struct {
@@ -19,15 +20,27 @@ type DownloadFilePayload struct {
 	AuthToken string `json:"auth_token"`
 }
 
+type UploadFileEncryptedPayload struct {
+	UID       string         `form:"uid"`
+	AuthToken string         `form:"auth_token"`
+	File      multipart.File `form:"file"`
+}
+
+type UploadFileEncryptedResponse struct {
+	CID  string `json:"cid"`
+	Name string `json:"name"`
+}
+
 type Storage interface {
 	DownloadFile(payload DownloadFilePayload) (string, error)
 	UploadFile(payload UploadFilePayload) (UploadFileResponse, error)
 }
 
 const (
-	SiaOption      string = "sia"
-	FileCoinOption string = "filecoin"
-	FVMOption      string = "fvm"
+	SiaOption          string = "sia"
+	FileCoinOption     string = "filecoin"
+	FVMOption          string = "fvm"
+	FVMEncryptedOption string = "fvmEncrypted"
 )
 
 var fileCoinApiKey string

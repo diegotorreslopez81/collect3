@@ -60,6 +60,8 @@ func main() {
 	router.GET("/nft/:uid", GetUri)
 	router.GET("/nft/id/:cid", GetNftId)
 	router.GET("/nft/metadata/:cid", GetNftMetadata)
+	router.GET("/share/:cid/:uid", GetSharedContent)
+	router.DELETE("/share/:cid/:uid", DeleteSharedContent)
 	router.POST("/nft", SetUriToFile)
 	router.POST("/account_exist", AccountExist)
 	router.POST("/create_account", CreateAccount)
@@ -67,6 +69,8 @@ func main() {
 	router.POST("/:storage/upload", UploadFile)
 	router.POST("/:storage/download", DownloadFile)
 	router.POST("/delete", DeleteForUser)
+	router.POST("/uploadEncrypted", UploadFileEncrypted)
+	router.POST("/share", ShareContent)
 
 	db, err := OpenDB("sqlite3", db_connection)
 	if err != nil {

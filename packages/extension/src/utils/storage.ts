@@ -1,4 +1,4 @@
-import Base64 from "./Base64";
+import { KeyShard } from "lighthouse-encryption-sdk-browser/dist/types";
 import {
   Metadata,
   Article,
@@ -266,7 +266,19 @@ export async function deleteArticleContent(url: string): Promise<void> {
   await removeFromStorage(url);
 }
 
-export async function saveArticle(url: string, article: Article): Promise<void> {
+export async function saveArticle(
+  url: string,
+  article: Article,
+  encodedArticleContent: string,
+  encryptParams?: {
+    uid: string,
+    address: string,
+    jwt: string,
+    fileEncryptionKey: string,
+    keyShards: KeyShard[],
+    encryptedData: Uint8Array,
+  },
+): Promise<void> {
   const articles = await getArticles();
   const { content, textContent, ...metadata } = article;
   const numOfWords = textContent.split(' ').length;
@@ -277,20 +289,38 @@ export async function saveArticle(url: string, article: Article): Promise<void> 
     return;
   }
   await setArticles(url, metadata as Metadata, articles);
-  const encodedArticleContent = Base64.encode(article!.content);
   await setArticleContent(
     url,
     encodedArticleContent,
   );
 
   const storage = await getActiveStorage();
+  const payload: {
+    url: string,
+    encryptParams?: {
+      uid: string,
+      address: string,
+      jwt: string,
+      fileEncryptionKey: string,
+      keyShards: KeyShard[],
+      encryptedData: Uint8Array,
+    }
+  } = { url };
   if (storage.shouldSync) {
-    chrome.runtime.sendMessage({
-      type: 'sync',
-      payload: {
-        url,
-      },
-    });
+    console.log("encryptParams", encryptParams);
+    if (encryptParams) {
+      payload.encryptParams = encryptParams;
+      console.log("syncEncrypt", payload);
+      chrome.runtime.sendMessage({
+        type: 'syncEncrypt',
+        payload,
+      });
+    } else {
+      chrome.runtime.sendMessage({
+        type: 'sync',
+        payload,
+      });
+    }
   }
 }
 

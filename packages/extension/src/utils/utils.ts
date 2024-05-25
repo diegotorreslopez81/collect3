@@ -1,3 +1,5 @@
+import { ethers } from "ethers";
+import { createExternalExtensionProvider } from "providers-fork";
 import { templateHtmlHead, templateHtmlMiddle, templateHtmlTail } from "./htmltemplate";
 
 export type Article = {
@@ -30,6 +32,7 @@ export type Storage = {
   shouldSync?: boolean;
   auth_token?: string;
   storageType: string;
+  wasShared?: boolean;
 }
 
 export const ACTIVE_STORAGE = 'active_storage';
@@ -100,4 +103,14 @@ export function articleContentToHtml(content: string, title: string, byline: str
     ${templateHtmlTail}
   `;
   return html;
+}
+
+export async function connectToMetamask(): Promise<ethers.JsonRpcSigner> {
+  const test = createExternalExtensionProvider();
+  console.log(test);
+  const provider = new ethers.BrowserProvider(test);
+  console.log(provider);
+  const signer = await provider.getSigner();
+  console.log(signer);
+  return signer;
 }
