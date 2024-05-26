@@ -1,0 +1,92 @@
+body {
+  font-family: segoe ui, helvetica, sans-serif;
+  background: #333;
+  color: rgb(189 198 207);
+  margin: 2em;
+}
+
+h1 {
+  font-size: 1.2em;
+  margin: 0 0 .5em 0;
+}
+
+h2 {
+  font-size: 1.1em;
+  margin: 0 0 .5em 0;
+}
+
+.title {
+  text-align: left;
+}
+
+.fullclick {
+  margin: 1em 0;
+  padding: 0;
+  max-width: 30em;
+}
+
+.fullclick li {
+  list-style: none;
+  margin: 1em 0;
+  padding: 20px 10px;
+  background: #2b2b2b;
+  position: relative;
+  transition: 400ms;
+}
+
+.todelete {
+  opacity: 0;
+}
+
+.fullclick p a {
+  color: lime;
+  z-index: 2;
+  position: relative;
+}
+
+.fullclick a.main {
+  color: #85baff;
+  text-align: right;
+  display: block;
+  z-index: 1;
+}
+
+.fullclick li a.main::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  content: ' ';
+}
+
+.fullclick:hover a.main,
+.fullclick:focus-within a.main {
+  color: #cfe4ff;
+}
+
+.fullclick li .delete-button {
+  z-index: 2;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  transition: 400ms;
+  border: none;
+  color: #fff;
+  background: #333;
+}
+
+.fullclick li:hover .delete-button,
+.fullclick li:focus-within .delete-button {
+  opacity: 1;
+}
+
+.fullclick li:hover,
+.fullclick li:focus-within {
+  background: #484848;
+  box-shadow: 0px 3px 6px #000;
+}
+
+.text-center {
+  text-align: center;
+}

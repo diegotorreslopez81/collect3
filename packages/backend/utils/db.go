@@ -391,7 +391,15 @@ func (db *SQLiteRepository) GetNFTByCid(cid string) (NFTContent, error) {
 }
 
 func (db *SQLiteRepository) SetSharedContent(cid string, uid string) error {
-	res, err := db.db.Exec("INSERT INTO shared_content(user_id, content_cid) values(?,?)", uid, cid)
+	var err error
+	user, err := db.GetUserByUID(uid)
+	if err != nil {
+		return err
+	}
+	if user == (User{}) {
+		return nil
+	}
+	res, err := db.db.Exec("INSERT INTO shared_content(user_id, content_cid) values(?,?)", user.ID, cid)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
@@ -411,7 +419,15 @@ func (db *SQLiteRepository) SetSharedContent(cid string, uid string) error {
 }
 
 func (db *SQLiteRepository) DeleteSharedContent(uid string, cid string) error {
-	_, err := db.db.Exec("DELETE FROM shared_content WHERE user_id=? AND content_cid=?", uid, cid)
+	var err error
+	user, err := db.GetUserByUID(uid)
+	if err != nil {
+		return err
+	}
+	if user == (User{}) {
+		return nil
+	}
+	_, err = db.db.Exec("DELETE FROM shared_content WHERE user_id=? AND content_cid=?", user.ID, cid)
 	if err != nil {
 		return err
 	}
@@ -419,8 +435,16 @@ func (db *SQLiteRepository) DeleteSharedContent(uid string, cid string) error {
 }
 
 func (db *SQLiteRepository) GetSharedContentByUid(uid string) ([]SharedContent, error) {
-	var content []SharedContent
-	err := db.db.Get(&content, "SELECT * FROM shared_content WHERE user_id=?", uid)
+	var content = []SharedContent{}
+	var err error
+	user, err := db.GetUserByUID(uid)
+	if err != nil {
+		return []SharedContent{}, err
+	}
+	if user == (User{}) {
+		return []SharedContent{}, nil
+	}
+	err = db.db.Select(&content, "SELECT * FROM shared_content WHERE user_id=?", user.ID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return []SharedContent{}, nil
 	}

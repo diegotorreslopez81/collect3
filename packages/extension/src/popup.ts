@@ -48,6 +48,13 @@ import Base64 from './utils/Base64';
         } | undefined = undefined;
         const encodedArticleContent = Base64.encode(response.article.content);
         if (activeStorage.storageType === 'fvmEncrypted') {
+          const rawContent = {
+            ...response.article,
+            textContent: undefined,
+            url: response.url,
+            content: encodedArticleContent,
+          };
+          const content = JSON.stringify(rawContent);
           console.log('fvmEncrypted')
           const signer = await connectToMetamask();
           const jwt = await getLightHouseJWT(signer);
@@ -55,7 +62,7 @@ import Base64 from './utils/Base64';
 
           const { masterKey: fileEncryptionKey, keyShards } = await generate();
           const encoder = new TextEncoder()
-          const encryptedData = await encryptFile(encoder.encode(encodedArticleContent).buffer, fileEncryptionKey);
+          const encryptedData = await encryptFile(encoder.encode(content).buffer, fileEncryptionKey);
           encryptParams = {
             uid,
             address: await signer.getAddress(),
@@ -131,6 +138,14 @@ import Base64 from './utils/Base64';
     }
   }
 
+  async function manageShared() {
+    try {
+      await openPage('received.html');
+    } catch (error) {
+      console.error("Error in manageArticles function:", error);
+    }
+  };
+
   function setupListeners() {
     document.getElementById("previewBtn")!.addEventListener("click", () => {
       preview();
@@ -146,6 +161,10 @@ import Base64 from './utils/Base64';
 
     document.getElementById("storageBtn")!.addEventListener("click", () => {
       manageStorage();
+    });
+
+    document.getElementById("ShareBtn")!.addEventListener("click", () => {
+      manageShared()
     });
 
     console.log('sending createAccountEvent');

@@ -1,4 +1,3 @@
-import { createExternalExtensionProvider } from "providers-fork";
 import "./storage.css";
 import {
   changeActiveStorage,
@@ -12,7 +11,6 @@ import {
 } from "../../utils/storage";
 import { ACTIVE_STORAGE, connectToMetamask, ID_KEY, Storage, STORAGE_OPTIONS } from "../../utils/utils";
 import { isStorageAvailable, ping } from "../../utils/backend";
-import { ethers } from "ethers";
 
 let activeStorage;
 let reducedmotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches

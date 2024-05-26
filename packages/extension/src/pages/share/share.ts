@@ -37,11 +37,10 @@ if (form) {
       const signer = await connectToMetamask();
 
       const response = await shareEncrypted(cid, signer, [address]);
-      const uid = await getUserUid();
       await fetch(`${storage.url}share`, {
         method: "POST",
         body: JSON.stringify({
-          uid,
+          address,
           cid,
         }),
       });

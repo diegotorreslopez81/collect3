@@ -60,7 +60,7 @@ func main() {
 	router.GET("/nft/:uid", GetUri)
 	router.GET("/nft/id/:cid", GetNftId)
 	router.GET("/nft/metadata/:cid", GetNftMetadata)
-	router.GET("/share/:cid/:uid", GetSharedContent)
+	router.GET("/share/:uid", GetSharedContent)
 	router.DELETE("/share/:cid/:uid", DeleteSharedContent)
 	router.POST("/nft", SetUriToFile)
 	router.POST("/account_exist", AccountExist)

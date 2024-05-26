@@ -13,6 +13,11 @@ func GetSharedContent(c *gin.Context) {
 
 	UID := c.Param("uid")
 
+	if UID == "" {
+		c.String(http.StatusBadRequest, "Missing UID")
+		return
+	}
+
 	content, err := DB.GetSharedContentByUid(UID)
 	if err != nil {
 		Logger.Error(

@@ -18,6 +18,7 @@ const config = (_, argv) =>
       storage: PATHS.src + '/pages/storage/storagePage.ts',
       share: PATHS.src + '/pages/share/share.ts',
       background: PATHS.src + '/background.ts',
+      received: PATHS.src + '/pages/received/received.ts',
     },
     plugins: [
       new Dotenv({
