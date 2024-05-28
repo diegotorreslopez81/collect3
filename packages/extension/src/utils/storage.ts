@@ -1,8 +1,8 @@
 import { KeyShard } from "lighthouse-encryption-sdk-browser/dist/types";
 import {
-  Metadata,
-  Article,
-  Storage,
+  type Metadata,
+  type Article,
+  type Storage,
   ACTIVE_STORAGE,
   DEFAULT_API,
   DEFAULT,

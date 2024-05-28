@@ -4,7 +4,7 @@ import { Metadata, Storage } from "../../utils/utils";
 
 function articleToElement(key: string, article: Metadata, storage: Storage): HTMLLIElement {
   const displayMint = article.cid && process.env.DEFAULT_STORAGE_API === storage.url;
-  const displayShare = displayMint && storage.storageType === "fvmEncrypted" && !storage?.wasShared;
+  const displayShare = article.cid && storage.storageType === "fvmEncrypted" && !article?.shared;
   console.table({
     displayMint,
     displayShare,

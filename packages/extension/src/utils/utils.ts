@@ -23,6 +23,7 @@ export type Metadata = {
   siteName: string;
   lang: string;
   cid?: string;
+  shared?: boolean;
 }
 
 export type Storage = {
@@ -32,7 +33,6 @@ export type Storage = {
   shouldSync?: boolean;
   auth_token?: string;
   storageType: string;
-  wasShared?: boolean;
 }
 
 export const ACTIVE_STORAGE = 'active_storage';

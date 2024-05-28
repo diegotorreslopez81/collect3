@@ -1,9 +1,9 @@
 import { getAuthMessage, getJWT, saveShards } from 'lighthouse-encryption-sdk-browser';
 import { decryptFile, fetchEncryptionKey, shareFile } from 'lighthouse-package-fork';
-import { Signer } from 'ethers';
+import { type Signer } from 'ethers';
 import { getActiveStorage, getFromStorage, setArticleCID, setAuthToken } from './storage';
-import { ID_KEY, Metadata, Storage } from './utils';
-import { KeyShard } from 'lighthouse-encryption-sdk-browser/dist/types';
+import { ID_KEY, type Metadata, type Storage } from './utils';
+import { type KeyShard } from 'lighthouse-encryption-sdk-browser/dist/types';
 
 export const getUserUid = async (): Promise<string> => {
   let id = await getFromStorage(ID_KEY);

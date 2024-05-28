@@ -1,6 +1,6 @@
 import "./received.css";
 import { getActiveStorage, getArticles, setArticleContent, setArticles } from "../../utils/storage";
-import { connectToMetamask, Storage, Metadata } from "../../utils/utils";
+import { connectToMetamask, type Storage, type Metadata } from "../../utils/utils";
 import { decryptArticle, getUserUid } from "../../utils/backend";
 
 let activeStorage: Storage;
@@ -93,6 +93,7 @@ const makeAcceptShared = (container: Element | null, cid: string) => {
         ...metadata
       } = parsed;
       metadata.cid = cid;
+      metadata.shared = true;
       await setArticles(url, metadata as Metadata, articles);
       await setArticleContent(
         url,

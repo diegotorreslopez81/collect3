@@ -1,6 +1,6 @@
 import "./share.css";
 import { getAddress } from "ethers";
-import { getUserUid, shareEncrypted } from "../../utils/backend";
+import { shareEncrypted } from "../../utils/backend";
 import { connectToMetamask } from "../../utils/utils";
 import { getActiveStorage } from "../../utils/storage";
 

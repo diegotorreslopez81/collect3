@@ -4,7 +4,7 @@ import { KeyShard } from "lighthouse-encryption-sdk-browser/dist/types";
 import { encryptArticle, getOrCreateToken, uploadFile } from "./utils/backend";
 import { fromHtmlToBase64, fromLocalOnlyToMultipleRemotes } from "./utils/migrations";
 import { getActiveStorage, getArticleContent, getArticles, getFromStorage } from "./utils/storage";
-import { Metadata } from "./utils/utils";
+import { type Metadata } from "./utils/utils";
 
 // With background scripts you can communicate with popup
 // and contentScript files.
