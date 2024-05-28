@@ -16,7 +16,12 @@ func DeleteSharedContent(c *gin.Context) {
 	CID := c.Param("cid")
 	UID := c.Param("uid")
 
-	err = DB.DeleteSharedContent(CID, UID)
+	if CID == "" || UID == "" {
+		c.String(http.StatusBadRequest, "Missing Parameters")
+		return
+	}
+
+	err = DB.DeleteSharedContent(UID, CID)
 	if err != nil {
 		if errors.Is(err, ErrDuplicate) {
 			c.JSON(http.StatusOK, gin.H{"cid": CID})

@@ -28,6 +28,11 @@ func ShareContent(c *gin.Context) {
 		return
 	}
 
+	if payload.UID == "" || payload.CID == "" {
+		c.String(http.StatusBadRequest, "Invalid Request Body")
+		return
+	}
+
 	err = DB.SetSharedContent(payload.CID, payload.UID)
 	if err != nil {
 		if errors.Is(err, ErrDuplicate) {

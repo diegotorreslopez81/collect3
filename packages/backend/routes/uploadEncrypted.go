@@ -4,10 +4,8 @@ import (
 	. "collect3/backend/storage"
 	. "collect3/backend/utils"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
-	"net/http/httputil"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mdobak/go-xerrors"
@@ -18,14 +16,6 @@ func UploadFileEncrypted(c *gin.Context) {
 	var response UploadFileEncryptedResponse
 	var err error
 	storage := GetFVMEncrypted(FVMApiKey)
-
-	fmt.Println("Our Request")
-	dump, err := httputil.DumpRequest(c.Request, true)
-	if err != nil {
-		fmt.Println("Failed To Dump Request: ", err)
-	} else {
-		fmt.Println(string(dump))
-	}
 
 	err = c.Request.ParseMultipartForm(32 << 20)
 	if err != nil {

@@ -40,7 +40,7 @@ if (form) {
       await fetch(`${storage.url}share`, {
         method: "POST",
         body: JSON.stringify({
-          address,
+          uid: address,
           cid,
         }),
       });
