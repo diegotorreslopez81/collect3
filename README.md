@@ -176,31 +176,48 @@ for the backend
 
 ### :gear: Installing Extension
 
-first we need to move to the extension directory
-```bash
-  cd packages/extension
-```
+#### setup
+1. run `git pull origin filecoin-final`
+2. go to the `packages/extension` directory
+  ```bash
+    cd packages/extension
+  ```
+3. run `yarn install`
+  ```bash
+    yarn install
+  ```
+4. copy the .env.example to .env
+  ```bash
+    cp .env.example .env
+  ```
+5. run `yarn build`
+  ```sh
+    yarn build
+  ```
+6. go to the browser and [install](https://superuser.com/questions/247651/how-does-one-install-an-extension-for-chrome-browser-from-the-local-file-system/) the extension
+7. open the extension in the browser and go to my storage
+8. if you want to use the encrypted storage, add a new storage option with the url `https://node.collect3.me/` and storage type `fvmEncrypted`
+9. mark it as active or mark the default one
+10. now you can collect some article
 
-we can start by installing the dependencies
-```bash
-  yarn install
-```
+#### to share an article
+1. collect any article
+2. go to the extension and go to articles
+3. the article should be displayed and have a link that says `share`
+4. if the link is not there and you did not receive any notification with an error wait a minute and reload the page
+5. click the link
+6. this will display a new page
+7. input the metamask address of the recipient
+8. click the share button
 
-Copy the contents of the .env.example and create your .env (to use our servers you can use the default .env)
-```bash
-  cp .env.example .env
-```
-
-Then you can build the extension
-```sh
-  yarn build
-```
-or you can execute this command if you are going to make changes to the code.
-```sh
-  yarn start
-```
-
-[And finally you can install it this way](https://superuser.com/questions/247651/how-does-one-install-an-extension-for-chrome-browser-from-the-local-file-system/)
+#### to receive
+in another browser or device
+with the extension and metamask installed
+do the same [setup](#setup) steps
+and remember to use the memamask address where you want to receive the articles
+1. go to the extension and go to `shared articles`
+2. the article should be displayed with a cid and have a button that says `Accept`
+- after signing the message you should be able to read the article the same way you would as if you collect it
 
 ### :gear: Using Remote Server
 If you want to use an already available server instead of hosting your own you can,
@@ -303,10 +320,10 @@ for production you can compile it and run the executable that you will find in t
 * [x] Create plugin browser
 * [x] Get a Read-mode view for articles
 * [x] Save them in Local Browser (temporally storage)
-* [ ] Create an NFT
-* [ ] Improve Read-mode view
+* [x] Create an NFT
+* [x] Improve Read-mode view
 * [x] Store the content into decentralized storage
-* [ ] Share your articles!
+* [x] Share your articles!
 * [ ] Add comments into the article
 * [ ] Read comments from any other article owners
 * [ ] Boost article discussions
