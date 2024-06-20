@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
@@ -76,10 +75,6 @@ func (storage fvmEncrypted) UploadFile(payload UploadFileEncryptedPayload) (Uplo
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		Logger.Error(
-			err.Error(),
-			slog.String("Failed To create request", ""),
-		)
 		return UploadFileEncryptedResponse{}, ErrorFailedToUploadFile
 	}
 	dump, err = httputil.DumpResponse(res, true)
@@ -99,14 +94,9 @@ func (storage fvmEncrypted) UploadFile(payload UploadFileEncryptedPayload) (Uplo
 		}
 		Logger.Error(
 			fmt.Sprintf("Failed To Upload File, Status %d", res.StatusCode),
-			slog.String(
-				"Response.Body",
-				bodyString,
-			),
-			slog.String(
-				"Response.Status",
-				res.Status,
-			),
+			"uid", payload.UID,
+			"Response.Body", bodyString,
+			"Response.Status", res.Status,
 		)
 		if res.StatusCode == http.StatusBadRequest {
 			return UploadFileEncryptedResponse{}, ErrorBadRequest
@@ -148,10 +138,8 @@ func (storage fvmEncrypted) DownloadFile(payload DownloadFilePayload) (string, e
 		}
 		Logger.Error(
 			fmt.Sprintf("Failed To Download File, Status %d", res.StatusCode),
-			slog.String(
-				"Response.Body",
-				bodyString,
-			),
+			"cid", payload.CID,
+			"Response.Body", bodyString,
 		)
 		if res.StatusCode == http.StatusUnauthorized {
 			return "", ErrorUnauthorized

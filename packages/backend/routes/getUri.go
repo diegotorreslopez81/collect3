@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 type FullMetadata struct {
@@ -27,9 +26,10 @@ func GetUri(c *gin.Context) {
 	var err error
 
 	uid := c.Param("uid")
-	nftContent, err := DB.GetNftCidByUid(uid)
+	nftContent, err := DB.GetNftContentByUid(uid)
 
 	if err != nil {
+		Logger.Error("Failed to Find NFt Content By Uid", "err", err, "uid", uid)
 		c.String(http.StatusBadRequest, "Failed to Find Content")
 		return
 	}
@@ -41,15 +41,14 @@ func GetUri(c *gin.Context) {
 
 	adminUser, err := DB.GetUserByID(1)
 	if err != nil {
+		Logger.Error("Failed To Get Admin", "err", err)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return
 	}
 
 	content, err := DB.GetContentByCID(nftContent.Content_CID)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed to Find Content By CID", "err", err, "cid", nftContent.Content_CID)
 		c.String(http.StatusBadRequest, "Failed to Find Content")
 		return
 	}
@@ -57,7 +56,10 @@ func GetUri(c *gin.Context) {
 	storage, err := GetStorage(content.Storage)
 	if err != nil {
 		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
+			"Failed To Get Storage",
+			"err", err,
+			"storage", content.Storage,
+			"cid", content.CID,
 		)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return
@@ -67,7 +69,10 @@ func GetUri(c *gin.Context) {
 
 	if err != nil {
 		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
+			"Failed To DownloadFile",
+			"err", err,
+			"cid", content.CID,
+			"storage", content.Storage,
 		)
 		c.String(http.StatusInternalServerError, "Failed to Get File")
 		return
@@ -82,9 +87,7 @@ func GetUri(c *gin.Context) {
 	err = json.Unmarshal(trimmedData, &metadata)
 
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed to Unmarshal", "err", err, "rawData", trimmedData)
 		c.String(http.StatusInternalServerError, "Failed to Get File")
 		return
 	}

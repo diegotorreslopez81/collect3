@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/mdobak/go-xerrors"
 )
 
 var isEnvLoaded = false
@@ -15,16 +14,11 @@ func GetEnvVar(key string) string {
 	if !isEnvLoaded {
 		err = godotenv.Load(".env")
 		if err != nil {
-			Logger.Error(
-				xerrors.WithStackTrace(err, 0).Error(),
-			)
-			os.Exit(1)
+			Logger.Error("Error Loading .env", err)
 		}
 		isEnvLoaded = true
 	}
-	Logger.Info(
-		fmt.Sprintf("getting %s", key),
-	)
+	Logger.Info(fmt.Sprintf("getting %s", key))
 
 	return os.Getenv(key)
 }

@@ -74,7 +74,7 @@ func SetFVMApiKey(key string) {
 	FVMApiKey = key
 }
 
-// TODO: Iplement a timeout to all the storage calls
+// TODO: Implement a timeout to all the storage calls
 func GetStorage(option string) (Storage, error) {
 	switch option {
 	case SiaOption:

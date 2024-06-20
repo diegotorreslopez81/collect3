@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"mime/multipart"
 	"net/http"
 )
@@ -67,10 +66,8 @@ func (storage fvm) UploadFile(payload UploadFilePayload) (UploadFileResponse, er
 		}
 		Logger.Error(
 			fmt.Sprintf("Failed To Upload File, Status %d", res.StatusCode),
-			slog.String(
-				"Response.Body",
-				bodyString,
-			),
+			"uid", payload.UID,
+			"Response.Body", bodyString,
 		)
 		if res.StatusCode == http.StatusBadRequest {
 			return UploadFileResponse{}, ErrorBadRequest
@@ -111,10 +108,8 @@ func (storage fvm) DownloadFile(payload DownloadFilePayload) (string, error) {
 		}
 		Logger.Error(
 			fmt.Sprintf("Failed To Download File, Status %d", res.StatusCode),
-			slog.String(
-				"Response.Body",
-				bodyString,
-			),
+			"cid", payload.CID,
+			"Response.Body", bodyString,
 		)
 		if res.StatusCode == http.StatusUnauthorized {
 			return "", ErrorUnauthorized

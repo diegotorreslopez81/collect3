@@ -2,7 +2,6 @@ package routes
 
 import (
 	. "collect3/backend/utils"
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,10 +21,8 @@ func GetSharedContent(c *gin.Context) {
 	if err != nil {
 		Logger.Error(
 			"Failed To Get Shared Content",
-			slog.String(
-				"Details",
-				err.Error(),
-			),
+			"Details", err,
+			"uid", UID,
 		)
 		c.String(http.StatusBadRequest, "Failed to Find Content")
 		return

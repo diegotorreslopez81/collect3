@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 func AccountExist(c *gin.Context) {
@@ -13,18 +12,14 @@ func AccountExist(c *gin.Context) {
 
 	err := c.BindJSON(&payload)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)
 		c.String(http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
 	user, err := DB.GetUserByUID(payload.UID)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed To Get User", "err", err, "uid", payload.UID)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return
 	}

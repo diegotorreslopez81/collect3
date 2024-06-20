@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 type UriToFilePayload struct {
@@ -20,7 +19,9 @@ func SetUriToFile(c *gin.Context) {
 	err = c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
+			"Invalid Request Body",
+			"err", err,
+			"req.Body", c.Request.Body,
 		)
 		c.String(http.StatusBadRequest, "Invalid Request Body")
 		return
@@ -29,7 +30,12 @@ func SetUriToFile(c *gin.Context) {
 	content, err := DB.GetContentByCID(payload.CID)
 
 	if err != nil {
-		c.String(http.StatusBadRequest, "Failed to Find Content")
+		Logger.Error(
+			"Failed To Find Content",
+			"err", err,
+			"cid", payload.CID,
+		)
+		c.String(http.StatusBadRequest, "Failed To Find Content")
 		return
 	}
 
@@ -41,6 +47,12 @@ func SetUriToFile(c *gin.Context) {
 	err = DB.SetNftUid(payload.UID, content.CID)
 
 	if err != nil {
+		Logger.Error(
+			"Failed to Save NFT UID",
+			"err", err,
+			"nftUid", payload.UID,
+			"cid", content.CID,
+		)
 		c.String(http.StatusBadRequest, "Failed to Save UID")
 		return
 	}

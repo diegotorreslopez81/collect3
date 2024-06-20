@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 type DeleteForUserPayload struct {
@@ -18,9 +17,7 @@ func DeleteForUser(c *gin.Context) {
 	var payload DeleteForUserPayload
 	err := c.BindJSON(&payload)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)
 		c.String(http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
@@ -28,16 +25,26 @@ func DeleteForUser(c *gin.Context) {
 	err = DB.UnlinkContent(payload.UID, payload.CID)
 	if err != nil {
 		if errors.Is(err, ErrNotExists) {
+			Logger.Error(
+				"User Does Not Exist",
+				"err", err,
+				"uid", payload.UID,
+				"cid", payload.CID,
+			)
 			c.String(http.StatusBadRequest, "User Does Not Exist")
 			return
 		}
 		if errors.Is(err, ErrDeleteFailed) {
+			Logger.Error(
+				"File Does Not Exist",
+				"err", err,
+				"uid", payload.UID,
+				"cid", payload.CID,
+			)
 			c.String(http.StatusBadRequest, "File Does Not Exist")
 			return
 		}
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Something Failed Deleting For User", err)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return
 	}

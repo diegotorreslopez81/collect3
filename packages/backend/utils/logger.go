@@ -1,10 +1,19 @@
 package utils
 
 import (
-  "os"
-  "log/slog"
+	"github.com/charmbracelet/log"
+	"io"
+	"os"
 )
 
-var handler *slog.JSONHandler = slog.NewJSONHandler(os.Stdout, nil)
-var Logger *slog.Logger = slog.New(handler)
+var Logger *log.Logger
 
+func InitLogger(file io.Writer) {
+	Logger = log.NewWithOptions(
+		io.MultiWriter(os.Stdout, file),
+		log.Options{
+			ReportCaller:    true,
+			ReportTimestamp: true,
+		},
+	)
+}

@@ -3,11 +3,9 @@ package routes
 import (
 	. "collect3/backend/utils"
 	"errors"
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 type ShareContentPayload struct {
@@ -22,13 +20,16 @@ func ShareContent(c *gin.Context) {
 	err = c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
+			"Invalid Request Body",
+			"err", err,
+			"res.Body", c.Request.Body,
 		)
 		c.String(http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
 	if payload.UID == "" || payload.CID == "" {
+		Logger.Error("Invalid Request Body No CID or UID")
 		c.String(http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
@@ -41,10 +42,9 @@ func ShareContent(c *gin.Context) {
 		}
 		Logger.Error(
 			"Failed To Insert CID In DB",
-			slog.String(
-				"Details",
-				xerrors.WithStackTrace(err, 0).Error(),
-			),
+			"err", err,
+			"cid", payload.CID,
+			"uid", payload.UID,
 		)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return

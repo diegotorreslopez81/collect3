@@ -6,11 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 type CreateTokenPayload struct {
@@ -31,9 +29,7 @@ func FetchNewToken(id int64, c *gin.Context) (string, error) {
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed To Create Request To Get Auth Token", "err", err)
 		c.String(http.StatusInternalServerError, "Failed To Create Auth Token")
 		return "", err
 	}
@@ -47,9 +43,7 @@ func FetchNewToken(id int64, c *gin.Context) (string, error) {
 	)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed To Create Auth Token", "res.Body", res.Body)
 		c.String(http.StatusInternalServerError, "Failed To Create Auth Token")
 		return "", err
 	}
@@ -63,17 +57,8 @@ func FetchNewToken(id int64, c *gin.Context) (string, error) {
 		}
 		Logger.Error(
 			fmt.Sprintf("Failed To Create Auth Token, Status %d", res.StatusCode),
-			slog.Any(
-				"StackTrace",
-				xerrors.WithStackTrace(
-					xerrors.New("Error"),
-					0,
-				).Error(),
-			),
-			slog.String(
-				"Response.Body",
-				bodyString,
-			),
+			"Response.Body",
+			bodyString,
 		)
 		c.String(res.StatusCode, "Something Went Wrong")
 		fmt.Println(res)
@@ -83,7 +68,11 @@ func FetchNewToken(id int64, c *gin.Context) (string, error) {
 	err = json.NewDecoder(res.Body).Decode(&tokenResponse)
 	if err != nil {
 		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
+			"Failed To Decode S5 Response When Creating A User",
+			"err",
+			err,
+			"res.Body",
+			res.Body,
 		)
 		c.String(res.StatusCode, "Something Went Wrong")
 		return "", err
@@ -96,18 +85,14 @@ func CreateToken(c *gin.Context) {
 
 	err := c.BindJSON(&payload)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)
 		c.String(http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
 	user, err := DB.GetUserByUID(payload.UID)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed To Get User", "err", err, "UID", payload.UID)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return
 	}
@@ -127,9 +112,7 @@ func CreateToken(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"id": user.ID, "auth_token": token})
 			return
 		}
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed To Update Token", "userId", user.ID, "token", token)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return
 	}

@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
-	"github.com/mdobak/go-xerrors"
 )
 
 type User struct {
@@ -45,6 +44,7 @@ var (
 	ErrNotExists    = errors.New("row not exists")
 	ErrUpdateFailed = errors.New("update failed")
 	ErrDeleteFailed = errors.New("delete failed")
+	ErrUserNotExist = errors.New("user does not exist")
 )
 
 type SQLiteRepository struct {
@@ -132,8 +132,7 @@ func (db *SQLiteRepository) Migrate() {
 
 	err := tx.Commit()
 	if err != nil {
-		Logger.Error(err.Error())
-		panic(err)
+		Logger.Fatal("Error Migrating DB", err)
 	}
 }
 
@@ -272,7 +271,7 @@ func (db *SQLiteRepository) UploadContent(uid string, cid string, storage string
 		return err
 	}
 	if user == (User{}) {
-		return xerrors.New("User Does Not Exist")
+		return ErrUserNotExist
 	}
 	content, err := db.GetContentByCID(cid)
 	if err != nil {
@@ -339,7 +338,7 @@ func (db *SQLiteRepository) SetNftUid(uid string, cid string) error {
 	return nil
 }
 
-func (db *SQLiteRepository) GetNftCidByUid(uid string) (NFTContent, error) {
+func (db *SQLiteRepository) GetNftContentByUid(uid string) (NFTContent, error) {
 	var content NFTContent
 	err := db.db.Get(&content, "SELECT * FROM nft_content WHERE uid=?", uid)
 	if errors.Is(err, sql.ErrNoRows) {

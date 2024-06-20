@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 type Metadata struct {
@@ -29,9 +28,7 @@ func GetNftMetadata(c *gin.Context) {
 
 	adminUser, err := DB.GetUserByID(1)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed To Get AdminUser From DB", "err", err)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return
 	}
@@ -39,9 +36,7 @@ func GetNftMetadata(c *gin.Context) {
 	content, err := DB.GetContentByCID(cid)
 
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed to Find Content By CID", "err", err, "cid", cid)
 		c.String(http.StatusBadRequest, "Failed to Find Content")
 		return
 	}
@@ -49,9 +44,6 @@ func GetNftMetadata(c *gin.Context) {
 	storage, err := GetStorage(content.Storage)
 
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
 		c.String(http.StatusInternalServerError, "Something Went Wrong")
 		return
 	}
@@ -60,7 +52,9 @@ func GetNftMetadata(c *gin.Context) {
 
 	if err != nil {
 		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
+			"Failed To Download File",
+			"err", err,
+			"cid", content.CID,
 		)
 		c.String(http.StatusInternalServerError, "Failed to Get File")
 		return
@@ -75,9 +69,7 @@ func GetNftMetadata(c *gin.Context) {
 	err = json.Unmarshal(trimmedData, &metadata)
 
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed to Unmarshal", "err", err, "rawData", trimmedData)
 		c.String(http.StatusInternalServerError, "Failed to Get File")
 		return
 	}

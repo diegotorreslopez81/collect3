@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 type CreateAccountPayload struct {
@@ -27,9 +25,7 @@ func CreateAccount(c *gin.Context) {
 
 	err := c.BindJSON(&payload)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)
 		c.String(http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
@@ -41,9 +37,7 @@ func CreateAccount(c *gin.Context) {
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed To Create Account Request", "err", err, "uid", payload.UID)
 		c.String(http.StatusInternalServerError, "Failed To Create Account")
 		return
 	}
@@ -57,9 +51,7 @@ func CreateAccount(c *gin.Context) {
 	)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed To Create Account", "err", err, "uid", payload.UID)
 		c.String(http.StatusInternalServerError, "Failed To Create Account")
 		return
 	}
@@ -73,17 +65,8 @@ func CreateAccount(c *gin.Context) {
 		}
 		Logger.Error(
 			fmt.Sprintf("Failed To Create Account, Status %d", res.StatusCode),
-			slog.Any(
-				"StackTrace",
-				xerrors.WithStackTrace(
-					xerrors.New("Error"),
-					0,
-				).Error(),
-			),
-			slog.String(
-				"Response.Body",
-				bodyString,
-			),
+			"Response.Body",
+			bodyString,
 		)
 		if bodyString == "This email address is already in use by another account on this node" {
 			c.String(http.StatusConflict, "Account Already Exist")
@@ -97,7 +80,11 @@ func CreateAccount(c *gin.Context) {
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
 		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
+			"Failed To Decode S5 Response When Creating A User",
+			"err",
+			err,
+			"res.Body",
+			res.Body,
 		)
 		c.String(res.StatusCode, "Failed To Create Account")
 		return
@@ -108,7 +95,15 @@ func CreateAccount(c *gin.Context) {
 	err = DB.CreateUser(response.Id, payload.UID, token)
 	if err != nil {
 		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
+			"Failed To Write To DB",
+			"err",
+			err,
+			"userId",
+			response.Id,
+			"uid",
+			payload.UID,
+			"token",
+			token,
 		)
 		c.String(http.StatusInternalServerError, "Failed To Write To DB")
 		return

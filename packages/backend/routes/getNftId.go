@@ -2,7 +2,6 @@ package routes
 
 import (
 	. "collect3/backend/utils"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +11,7 @@ func GetNftId(c *gin.Context) {
 	content, err := DB.GetNftIdByCid(c.Param("cid"))
 
 	if err != nil {
-		fmt.Println(err)
+		Logger.Error("Failed to Get NFT By CID", "err", err)
 		c.String(http.StatusInternalServerError, "Failed to Get NFT ID")
 		return
 	}
@@ -20,7 +19,7 @@ func GetNftId(c *gin.Context) {
 	if content == (NFTContent{}) {
 		int, err := DB.GetNextNFTId()
 		if err != nil {
-			fmt.Println(err)
+			Logger.Error("Failed to Get Next NFT ID", "err", err)
 			c.String(http.StatusInternalServerError, "Failed to Get NFT ID")
 			return
 		}

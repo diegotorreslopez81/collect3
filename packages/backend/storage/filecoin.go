@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"os"
 
@@ -136,10 +135,8 @@ func (storage filecoin) UploadFile(payload UploadFilePayload) (UploadFileRespons
 		}
 		Logger.Error(
 			fmt.Sprintf("Failed To Upload File, Status %d", res.StatusCode),
-			slog.String(
-				"Response.Body",
-				filecoinResponse.Error.Message,
-			),
+			"uid", payload.UID,
+			"Response.Body", filecoinResponse.Error.Message,
 		)
 		if res.StatusCode == http.StatusBadRequest {
 			return UploadFileResponse{}, ErrorBadRequest
@@ -180,10 +177,8 @@ func (storage filecoin) DownloadFile(payload DownloadFilePayload) (string, error
 		}
 		Logger.Error(
 			fmt.Sprintf("Failed To Download File, Status %d", res.StatusCode),
-			slog.String(
-				"Response.Body",
-				bodyString,
-			),
+			"cid", payload.CID,
+			"Response.Body", bodyString,
 		)
 		if res.StatusCode == http.StatusUnauthorized {
 			return "", ErrorUnauthorized

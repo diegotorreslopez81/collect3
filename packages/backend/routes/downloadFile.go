@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
 func DownloadFile(c *gin.Context) {
@@ -21,9 +20,7 @@ func DownloadFile(c *gin.Context) {
 
 	err = c.BindJSON(&payload)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)
 		c.String(http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
@@ -31,6 +28,7 @@ func DownloadFile(c *gin.Context) {
 	storage, err := GetStorage(storageOption)
 
 	if err != nil {
+		Logger.Error("Invalid Storage Option %s", storageOption)
 		c.String(http.StatusBadRequest, "Invalid Storage Option "+storageOption)
 		return
 	}
@@ -38,42 +36,41 @@ func DownloadFile(c *gin.Context) {
 	file, err = storage.DownloadFile(payload)
 
 	if err != nil {
+		LogWithPayload := Logger.With("cid", payload.CID)
 		if errors.Is(err, ErrorFailedToCreateClient) {
-			Logger.Error(
-				xerrors.WithStackTrace(err, 0).Error(),
-			)
+			LogWithPayload.Error(ErrorFailedToCreateClient)
 			c.String(http.StatusInternalServerError, "Failed To Download File")
 			return
 		}
 
 		if errors.Is(err, ErrorFailedToDownloadFile) {
-			Logger.Error(
-				xerrors.WithStackTrace(err, 0).Error(),
-			)
+			LogWithPayload.Error(ErrorFailedToDownloadFile)
 			c.String(http.StatusInternalServerError, "Failed To Download File")
 			return
 		}
 
 		if errors.Is(err, ErrorUnauthorized) {
+			LogWithPayload.Error(ErrorUnauthorized)
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			return
 		}
 		if errors.Is(err, ErrorNotFound) {
+			LogWithPayload.Error(ErrorNotFound)
 			c.String(http.StatusNotFound, "File Not Found")
 			return
 		}
 		if errors.Is(err, ErrorNonOkay) {
+			LogWithPayload.Error(ErrorNonOkay)
 			c.String(http.StatusInternalServerError, "Failed To Download File")
 			return
 		}
 
 		if errors.Is(err, ErrorFailedToReadFile) {
-			Logger.Error(
-				xerrors.WithStackTrace(err, 0).Error(),
-			)
+			LogWithPayload.Error(ErrorFailedToReadFile)
 			c.String(http.StatusInternalServerError, "Failed To Read File")
 			return
 		}
+		LogWithPayload.Error("Failed To Download File", "err", err)
 		c.String(http.StatusInternalServerError, "Failed To Download File")
 		return
 	}
@@ -87,9 +84,7 @@ func DownloadFile(c *gin.Context) {
 	err = json.Unmarshal(trimmedData, &metadata)
 
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
+		Logger.Error("Failed to Unmarshal", "err", err, "rawData", trimmedData)
 		c.String(http.StatusInternalServerError, "Failed to Get File")
 		return
 	}

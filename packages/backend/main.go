@@ -7,24 +7,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/mdobak/go-xerrors"
 )
 
-var db_connection = GetEnvVar("DB_CONNECTION")
-var host = GetEnvVar("HOST")
-var port = GetEnvVar("PORT")
-var gin_realease = GetEnvVar("GIN_RELEASE")
-var tls_cert = GetEnvVar("TLS_CERT")
-var tls_key = GetEnvVar("TLS_KEY")
-
 func main() {
-	slog.SetDefault(Logger)
+	//setup login
+	logFile, err := os.OpenFile("./logs.txt", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Printf("failed to create log file: %s, \n", err)
+		panic(err)
+	}
+	defer logFile.Close()
+	InitLogger(logFile)
+
+	var db_connection = GetEnvVar("DB_CONNECTION")
+	var host = GetEnvVar("HOST")
+	var port = GetEnvVar("PORT")
+	var gin_realease = GetEnvVar("GIN_RELEASE")
+	var tls_cert = GetEnvVar("TLS_CERT")
+	var tls_key = GetEnvVar("TLS_KEY")
+
+	//setup env variables
 	if gin_realease == "true" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -40,8 +47,7 @@ func main() {
 	key = GetEnvVar("ADMIN_S5_KEY")
 
 	if key == "" {
-		Logger.Error("No S5 Key")
-		panic("No S5 Key")
+		Logger.Fatal("No S5 Key")
 	}
 	SetS5ApiKey(key)
 
@@ -74,29 +80,15 @@ func main() {
 
 	db, err := OpenDB("sqlite3", db_connection)
 	if err != nil {
-		Logger.Error(
-			"Failed To Open DB",
-			slog.String(
-				"Details",
-				err.Error(),
-			),
-		)
-		os.Exit(1)
+		Logger.Fatal("Failed To Open DB", "Details", err.Error())
 	}
 
-	//this can panic on error
+	//WARNING: this can panic on error
 	db.Migrate()
 
 	user, err := db.GetUserByID(1)
 	if err != nil {
-		Logger.Error(
-			"Failed to get the id 1 account",
-			slog.String(
-				"Details",
-				err.Error(),
-			),
-		)
-		os.Exit(1)
+		Logger.Fatal("Failed to get the id 1 account", "Details", err.Error())
 	}
 
 	if user == (User{}) {
@@ -105,10 +97,7 @@ func main() {
 
 		req, err := http.NewRequest(http.MethodPost, url, nil)
 		if err != nil {
-			Logger.Error(
-				xerrors.WithStackTrace(err, 0).Error(),
-			)
-			panic(err)
+			Logger.Fatal("Error Creating Request To Init Admin", "error", err)
 		}
 
 		req.Header.Add(
@@ -120,10 +109,7 @@ func main() {
 		)
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
-			Logger.Error(
-				xerrors.WithStackTrace(err, 0).Error(),
-			)
-			panic(err)
+			Logger.Fatal("Failed To Init Admin", err)
 		}
 
 		var tokenResponse CreateTokenResponse
@@ -135,51 +121,29 @@ func main() {
 			if err == nil {
 				bodyString = string(bodyBytes)
 			}
-			Logger.Error(
-				fmt.Sprintf("Failed To Create Auth Token, Status %d", res.StatusCode),
-				slog.Any(
-					"StackTrace",
-					xerrors.WithStackTrace(
-						xerrors.New("Error"),
-						0,
-					).Error(),
-				),
-				slog.String(
-					"Response.Body",
-					bodyString,
-				),
+			Logger.Fatal(
+				fmt.Sprintf("Failed To Create Auth Token For Admin, Status %d", res.StatusCode),
+				"Response.Body",
+				bodyString,
 			)
-
-			panic(err)
 		}
 
 		//s5-node admin account
 		err = db.CreateUser(1, "admin", tokenResponse.AuthToken)
 		if err != nil {
-			Logger.Error(
-				"Failed to create the id 1 account",
-				slog.String(
-					"Details",
-					err.Error(),
-				),
-			)
-			os.Exit(1)
+			Logger.Fatal("Failed to create the id 1 Admin account", "Details", err)
 		}
 	}
 
 	if tls_cert != "" {
 		err = router.RunTLS(":"+port, tls_cert, tls_key)
 		if err != nil {
-			Logger.Error("Failed To Run With TLS")
-			panic(err)
+			Logger.Fatal("Failed To Run With TLS")
 		}
 	}
 	err = router.Run(host + ":" + port)
 	if err != nil {
-		Logger.Error(
-			xerrors.WithStackTrace(err, 0).Error(),
-		)
-		os.Exit(1)
+		Logger.Fatal("Failed To Start Server", err)
 	}
 }
 
