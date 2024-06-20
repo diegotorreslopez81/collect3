@@ -37,6 +37,9 @@ function storageToElement(option: Storage, isActive: boolean): HTMLLIElement {
         Make Main Storage Option
       </button>
     `: ""}
+    <div>
+      <span>Type: ${option.storageType}</span>
+    </div>
     <button
       id="${option.url}"
       class="delete-button"
