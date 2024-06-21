@@ -1,4 +1,3 @@
-version: '3'
 services:
   s5-node:
     depends_on:
