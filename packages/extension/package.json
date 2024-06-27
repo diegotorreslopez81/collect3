@@ -1,40 +1,41 @@
 {
-  "name": "extension",
-  "version": "0.1.0",
-  "description": "My Chrome Extension",
+  "name": "Collect3",
+  "version": "0.0.2",
+  "description": "Plugin to store articles forever in NFT format",
+  "type": "module",
   "private": true,
   "scripts": {
-    "watch": "webpack --mode=development --watch --config config/webpack.config.js",
-    "build": "webpack --mode=production --config config/webpack.config.js",
+    "watch": "vite build -w",
+    "build": "vite build",
     "pack": "node pack.js",
     "repack": "npm run build && npm run pack",
     "format": "prettier --write --ignore-unknown \"{config,public,src}/**/*.{html,css,js,ts,json}\""
   },
   "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.23",
     "@types/chrome": "^0.0.243",
     "adm-zip": "^0.5.10",
     "buffer": "^6.0.3",
     "chrome-types": "^0.1.224",
-    "copy-webpack-plugin": "^10.2.4",
-    "css-loader": "^6.8.1",
-    "file-loader": "^6.2.0",
-    "mini-css-extract-plugin": "^2.7.6",
     "prettier": "^2.8.8",
     "process": "^0.11.10",
+    "solid-devtools": "^0.30.1",
     "stream-browserify": "^3.0.0",
-    "ts-loader": "^9.2.8",
-    "typescript": "^4.6.3",
-    "webpack": "^5.88.2",
-    "webpack-cli": "^4.10.0",
-    "webpack-merge": "^5.9.0"
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.3.1",
+    "vite-plugin-html-purgecss": "^0.1.1",
+    "vite-plugin-node-polyfills": "^0.22.0",
+    "vite-plugin-solid": "^2.10.2",
+    "vite-plugin-static-copy": "^1.0.5"
   },
   "dependencies": {
     "@lukeed/uuid": "^2.0.1",
     "@mozilla/readability": "^0.4.4",
-    "dotenv-webpack": "^8.0.1",
     "ethers": "^6.12.1",
     "lighthouse-encryption-sdk-browser": "^0.1.6",
     "lighthouse-package-fork": "^0.0.1",
-    "providers-fork": "^16.1.1"
+    "providers-fork": "^16.1.1",
+    "solid-js": "^1.8.17"
   }
 }

@@ -110,6 +110,7 @@ export async function createStorageOption(url: string, alias: string, storageTyp
 
 export async function deleteStorageOption(url: string) {
   if (url === DEFAULT_API) {
+    await changeActiveStorage(DEFAULT_API as string, 'sia', false);
     return;
   }
   const options = await getStorageOptions();

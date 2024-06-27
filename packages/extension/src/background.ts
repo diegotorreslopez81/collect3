@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener((
     const upload = async () => {
       try {
         chrome.notifications.create("", {
-          iconUrl: 'icons/icon_128.png',
+          iconUrl: '../public/icon_128.png',
           type: 'basic',
           message: 'Saving Article In Server',
           title: 'Info',
@@ -59,7 +59,7 @@ chrome.runtime.onMessage.addListener((
         })
       } catch (err: any) {
         chrome.notifications.create("", {
-          iconUrl: 'icons/icon_128.png',
+          iconUrl: '../public/icon_128.png',
           type: 'basic',
           message: 'Failed To Save In Server',
           title: 'Info',

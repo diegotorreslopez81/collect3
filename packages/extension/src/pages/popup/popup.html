@@ -2,16 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Collect3 - Content Preview</title>
-    <link rel="stylesheet" href="preview.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Chrome Extension</title>
+    <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <div class="app">
-      <div class="iframe-container"></div>
-    </div>
+    <div id="root" class="app"></div>
 
-    <script src="preview.js"></script>
+    <script src="popup.tsx" type="module"></script>
 
     <!--
       This HTML file opens when you click on icon from the toolbar.

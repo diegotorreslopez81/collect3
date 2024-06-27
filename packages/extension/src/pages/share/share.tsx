@@ -1,3 +1,7 @@
+'use strict';
+import { createSignal, JSX } from "solid-js";
+import { render } from "solid-js/web";
+
 import "./share.css";
 import { getAddress } from "ethers";
 import { shareEncrypted } from "../../utils/backend";
@@ -7,13 +11,13 @@ import { getActiveStorage } from "../../utils/storage";
 const params = new URLSearchParams(location.search);
 const cid = params.get('cid');
 
-const form: HTMLFormElement | null = document.querySelector("#share-content");
-if (form) {
-  form.addEventListener('submit', async function(e: Event) {
-    e.preventDefault()
-    const addressInput: HTMLInputElement | null = form[0] as HTMLInputElement;
+export function App(): JSX.Element {
+  const [receiverAddress, setReceiverAddress] = createSignal('');
+
+  async function handleSubmit(e: Event) {
+    e.preventDefault();
     const storage = await getActiveStorage();
-    const value = addressInput.value.trim();
+    const value = receiverAddress()?.trim();
     if (!value) {
       console.log("address empty");
       return
@@ -50,7 +54,7 @@ if (form) {
           type: "success",
           message: "content shared successfully",
         });
-        addressInput.value = '';
+        setReceiverAddress('');
       } else {
         chrome.runtime.sendMessage({
           type: "error",
@@ -64,5 +68,26 @@ if (form) {
         message: "Failed to share content",
       });
     }
-  });
+  };
+
+  return (
+    <>
+      <h1 class="title">Share</h1>
+      <form id="share-content" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="address"
+          placeholder="metamask address"
+          value={receiverAddress()}
+          onChange={(e: Event) => {
+            //@ts-ignore
+            setReceiverAddress(e.target.value);
+          }}
+        />
+        <button type="submit">Share</button>
+      </form>
+    </>
+  );
 }
+
+render(App, document.getElementById("root")!);
