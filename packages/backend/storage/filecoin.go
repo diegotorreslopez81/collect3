@@ -57,6 +57,7 @@ func (storage filecoin) UploadFile(payload UploadFilePayload) (UploadFileRespons
 
 	tempCarFile, err = os.CreateTemp("", "article_")
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToCreateTempFile
 	}
 	//TODO: maybe is better to use a tempdir and clean with a cronjob or if the dir hits a certain size
@@ -65,6 +66,7 @@ func (storage filecoin) UploadFile(payload UploadFilePayload) (UploadFileRespons
 
 	tempFile, err = os.CreateTemp("", "og_article_")
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToCreateTempFile
 	}
 	defer tempFile.Close()
@@ -72,17 +74,20 @@ func (storage filecoin) UploadFile(payload UploadFilePayload) (UploadFileRespons
 
 	_, err = tempFile.WriteString(payload.File)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToWriteTempFile
 	}
 
 	// make a cid with the right length that we eventually will patch with the root.
 	hasher, err := multihash.GetHasher(multihash.SHA2_256)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, errors.New("CREATE HAHSHER ERROR")
 	}
 	digest := hasher.Sum([]byte{})
 	hash, err := multihash.Encode(digest, multihash.SHA2_256)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, errors.New("CREATE HASH ERROR")
 	}
 	proxyRoot := cid.NewCidV1(uint64(multicodec.DagPb), hash)
@@ -92,30 +97,35 @@ func (storage filecoin) UploadFile(payload UploadFilePayload) (UploadFileRespons
 	blockreader, err := BlockStore.OpenReadWriteFile(tempCarFile, []cid.Cid{proxyRoot}, options...)
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, errors.New("BLOCK READER ERROR")
 	}
 
 	root, err := WriteFiles(context.Background(), true, blockreader, tempFile.Name())
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, errors.New("ERROR WRITING CAR FILE")
 	}
 
 	fmt.Println("CID: " + root.String())
 
 	if err := blockreader.Finalize(); err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, errors.New("ERROR CLOSING THE FILE")
 	}
 
 	err = carThings.ReplaceRootsInFile(tempCarFile.Name(), []cid.Cid{root})
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, errors.New("ERROR FAILED TO REWRITE THE CID")
 	}
 
 	url := "https://api.nft.storage/upload"
 	req, err := http.NewRequest(http.MethodPost, url, tempCarFile)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToCreateClient
 	}
 	req.Header.Set("Authorization", "Bearer "+storage.api_key)
@@ -124,6 +134,7 @@ func (storage filecoin) UploadFile(payload UploadFilePayload) (UploadFileRespons
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToUploadFile
 	}
 
@@ -149,6 +160,7 @@ func (storage filecoin) UploadFile(payload UploadFilePayload) (UploadFileRespons
 
 	err = json.NewDecoder(res.Body).Decode(&filecoinResponse)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToReadResponse
 	}
 	response = UploadFileResponse{
@@ -161,11 +173,13 @@ func (storage filecoin) DownloadFile(payload DownloadFilePayload) (string, error
 	url := fmt.Sprintf("https://nftstorage.link/ipfs/%s", payload.CID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToCreateClient
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToDownloadFile
 	}
 	if res.StatusCode != http.StatusOK {
@@ -194,6 +208,7 @@ func (storage filecoin) DownloadFile(payload DownloadFilePayload) (string, error
 	file, err := io.ReadAll(res.Body)
 
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToReadFile
 	}
 

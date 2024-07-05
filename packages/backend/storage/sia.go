@@ -27,11 +27,13 @@ func (storage s5) UploadFile(payload UploadFilePayload) (UploadFileResponse, err
 	writer = multipart.NewWriter(&body)
 	part, err := writer.CreateFormFile("file", "article.txt")
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToParseFile
 	}
 	_, err = part.Write([]byte(payload.File))
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToReadFile
 	}
 
@@ -40,6 +42,7 @@ func (storage s5) UploadFile(payload UploadFilePayload) (UploadFileResponse, err
 	url := fmt.Sprintf("http://localhost:5050/s5/upload?auth_token=%s", payload.AuthToken)
 	req, err := http.NewRequest(http.MethodPost, url, &body)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToCreateClient
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -47,6 +50,7 @@ func (storage s5) UploadFile(payload UploadFilePayload) (UploadFileResponse, err
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToUploadFile
 	}
 
@@ -73,6 +77,7 @@ func (storage s5) UploadFile(payload UploadFilePayload) (UploadFileResponse, err
 
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToReadResponse
 	}
 	return response, nil
@@ -82,11 +87,13 @@ func (storage s5) DownloadFile(payload DownloadFilePayload) (string, error) {
 	url := fmt.Sprintf("http://localhost:5050/s5/download/%s?auth_token=%s", payload.CID, payload.AuthToken)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToCreateClient
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToDownloadFile
 	}
 	if res.StatusCode != http.StatusOK {
@@ -115,6 +122,7 @@ func (storage s5) DownloadFile(payload DownloadFilePayload) (string, error) {
 	file, err := io.ReadAll(res.Body)
 
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToReadFile
 	}
 

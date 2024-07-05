@@ -42,11 +42,13 @@ func (storage fvmEncrypted) UploadFile(payload UploadFileEncryptedPayload) (Uplo
 	part, err := writer.CreatePart(h)
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileEncryptedResponse{}, ErrorFailedToParseFile
 	}
 	_, err = io.Copy(part, payload.File)
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileEncryptedResponse{}, ErrorFailedToReadFile
 	}
 
@@ -55,6 +57,7 @@ func (storage fvmEncrypted) UploadFile(payload UploadFileEncryptedPayload) (Uplo
 	url := "https://node.lighthouse.storage/api/v0/add?wrap-with-directory=false"
 	req, err := http.NewRequest(http.MethodPost, url, &body)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileEncryptedResponse{}, ErrorFailedToCreateClient
 	}
 	req.Header.Set("Authorization", "Bearer "+storage.api_key)
@@ -66,23 +69,24 @@ func (storage fvmEncrypted) UploadFile(payload UploadFileEncryptedPayload) (Uplo
 
 	dump, err := httputil.DumpRequestOut(req, true)
 	if err != nil {
-		fmt.Println("failed to dump request: ", err)
+		Logger.Error("failed to dump request", err)
 	} else {
-		fmt.Println("request: ")
-		fmt.Println(string(dump))
+		Logger.Info("request: ")
+		Logger.Info(string(dump))
 	}
 
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileEncryptedResponse{}, ErrorFailedToUploadFile
 	}
 	dump, err = httputil.DumpResponse(res, true)
 	if err != nil {
-		fmt.Println("failed to dump response: ", err)
+		Logger.Error("failed to dump response", err)
 	} else {
-		fmt.Println("response: ")
-		fmt.Println(string(dump))
+		Logger.Info("response: ")
+		Logger.Info(string(dump))
 	}
 
 	if res.StatusCode != http.StatusOK {
@@ -109,6 +113,7 @@ func (storage fvmEncrypted) UploadFile(payload UploadFileEncryptedPayload) (Uplo
 
 	err = json.NewDecoder(res.Body).Decode(&filecoinResponse)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileEncryptedResponse{}, ErrorFailedToReadResponse
 	}
 	response = UploadFileEncryptedResponse{
@@ -122,11 +127,13 @@ func (storage fvmEncrypted) DownloadFile(payload DownloadFilePayload) (string, e
 	url := fmt.Sprintf("https://gateway.lighthouse.storage/ipfs/%s", payload.CID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToCreateClient
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToDownloadFile
 	}
 	if res.StatusCode != http.StatusOK {
@@ -155,6 +162,7 @@ func (storage fvmEncrypted) DownloadFile(payload DownloadFilePayload) (string, e
 	file, err := io.ReadAll(res.Body)
 
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToReadFile
 	}
 

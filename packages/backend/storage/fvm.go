@@ -31,11 +31,13 @@ func (storage fvm) UploadFile(payload UploadFilePayload) (UploadFileResponse, er
 	var writer *multipart.Writer = multipart.NewWriter(&body)
 	part, err := writer.CreateFormFile("file", "article.json")
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToParseFile
 	}
 	_, err = part.Write([]byte(payload.File))
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToReadFile
 	}
 
@@ -44,6 +46,7 @@ func (storage fvm) UploadFile(payload UploadFilePayload) (UploadFileResponse, er
 	url := "https://node.lighthouse.storage/api/v0/add"
 	req, err := http.NewRequest(http.MethodPost, url, &body)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToCreateClient
 	}
 	req.Header.Set("Authorization", "Bearer "+storage.api_key)
@@ -54,6 +57,7 @@ func (storage fvm) UploadFile(payload UploadFilePayload) (UploadFileResponse, er
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToUploadFile
 	}
 
@@ -80,6 +84,7 @@ func (storage fvm) UploadFile(payload UploadFilePayload) (UploadFileResponse, er
 
 	err = json.NewDecoder(res.Body).Decode(&filecoinResponse)
 	if err != nil {
+		Logger.Error(err)
 		return UploadFileResponse{}, ErrorFailedToReadResponse
 	}
 	response = UploadFileResponse{
@@ -92,11 +97,13 @@ func (storage fvm) DownloadFile(payload DownloadFilePayload) (string, error) {
 	url := fmt.Sprintf("https://gateway.lighthouse.storage/ipfs/%s", payload.CID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToCreateClient
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToDownloadFile
 	}
 	if res.StatusCode != http.StatusOK {
@@ -125,6 +132,7 @@ func (storage fvm) DownloadFile(payload DownloadFilePayload) (string, error) {
 	file, err := io.ReadAll(res.Body)
 
 	if err != nil {
+		Logger.Error(err)
 		return "", ErrorFailedToReadFile
 	}
 
