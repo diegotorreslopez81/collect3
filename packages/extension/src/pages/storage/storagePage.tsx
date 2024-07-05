@@ -200,6 +200,8 @@ export function App(): JSX.Element {
       return
     }
     const result = await createStorageOption(parsedUrl.toString(), alias()?.trim() || '', selectedStorage() || 'sia');
+    setUrl('');
+    setAlias('');
     console.log('result: ', result);
   }
 
