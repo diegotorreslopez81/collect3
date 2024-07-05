@@ -108,29 +108,23 @@ export async function createStorageOption(url: string, alias: string, storageTyp
   return true;
 }
 
-export async function deleteStorageOption(url: string) {
-  if (url === DEFAULT_API) {
+export async function deleteStorageOption(url: string, type: string) {
+  if (url === DEFAULT_API && type === 'sia') {
     await changeActiveStorage(DEFAULT_API as string, 'sia', false);
     return;
   }
   const options = await getStorageOptions();
   const active = await getActiveStorage();
 
-  const toDelete = options.findIndex((v) => {
-    return v.url == url;
+  const filtered = options.filter((v) => {
+    return v.url !== url || v.url == url && v.storageType !== type
   });
 
-  if (url === active.url) {
+  if (url === active.url && type == active.storageType) {
     await changeActiveStorage(DEFAULT_API as string, 'sia', false);
   }
 
-  if (toDelete === -1) {
-    return;
-  }
-
-  options[toDelete].deleted = true;
-
-  await setToStorage(STORAGE_OPTIONS, JSON.stringify(options));
+  await setToStorage(STORAGE_OPTIONS, JSON.stringify(filtered));
 };
 
 export async function changeActiveStorage(url: string, storageType: string, sync: boolean): Promise<void> {

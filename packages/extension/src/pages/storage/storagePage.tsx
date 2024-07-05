@@ -35,7 +35,7 @@ function StorageElement(props: {
 
   async function deleteOption() {
 
-    await deleteStorageOption(option?.url || '');
+    await deleteStorageOption(option?.url || '', storageType);
 
     //@ts-ignore
     setOptions((op: Storage[]) => (op.filter(
