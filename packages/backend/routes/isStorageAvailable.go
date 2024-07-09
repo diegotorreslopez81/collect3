@@ -2,6 +2,7 @@ package routes
 
 import (
 	. "collect3/backend/storage"
+	. "collect3/backend/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 func IsStorageAvailable(c *gin.Context) {
 	var err error
 	storageOption := c.Param("storage")
+	Logger.Info("/:storage/available", "storage", storageOption)
 
 	_, err = GetStorage(storageOption)
 

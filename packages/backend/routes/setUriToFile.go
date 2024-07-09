@@ -16,6 +16,8 @@ func SetUriToFile(c *gin.Context) {
 	var payload UriToFilePayload
 	var err error
 
+	Logger.Info("POST /nft")
+
 	err = c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error(

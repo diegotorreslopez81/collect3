@@ -26,6 +26,7 @@ func GetUri(c *gin.Context) {
 	var err error
 
 	uid := c.Param("uid")
+	Logger.Info("/nft/:uid", "uid", uid)
 	nftContent, err := DB.GetNftContentByUid(uid)
 
 	if err != nil {

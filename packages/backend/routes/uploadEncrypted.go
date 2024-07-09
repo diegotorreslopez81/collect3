@@ -15,6 +15,8 @@ func UploadFileEncrypted(c *gin.Context) {
 	var err error
 	storage := GetFVMEncrypted(FVMApiKey)
 
+	Logger.Info("POST /uploadEncrypted")
+
 	err = c.Request.ParseMultipartForm(32 << 20)
 	if err != nil {
 		Logger.Error("Failed To Parse MultipartForm", "err", err)

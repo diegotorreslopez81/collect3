@@ -15,6 +15,8 @@ type DeleteForUserPayload struct {
 
 func DeleteForUser(c *gin.Context) {
 	var payload DeleteForUserPayload
+
+	Logger.Info("POST /delete")
 	err := c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)

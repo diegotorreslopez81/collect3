@@ -83,6 +83,8 @@ func FetchNewToken(id int64, c *gin.Context) (string, error) {
 func CreateToken(c *gin.Context) {
 	var payload CreateAccountPayload
 
+	Logger.Info("POST /create_token")
+
 	err := c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)

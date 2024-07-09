@@ -9,6 +9,7 @@ import (
 
 func GetNftId(c *gin.Context) {
 	content, err := DB.GetNftIdByCid(c.Param("cid"))
+	Logger.Info("/nft/id/:cid", "cid", c.Param("cid"))
 
 	if err != nil {
 		Logger.Error("Failed to Get NFT By CID", "err", err)

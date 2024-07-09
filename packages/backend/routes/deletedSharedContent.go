@@ -13,6 +13,8 @@ func DeleteSharedContent(c *gin.Context) {
 	CID := c.Param("cid")
 	UID := c.Param("uid")
 
+	Logger.Info("DELETE /share/:cid/:uid", "cid", CID, "uid", UID)
+
 	if CID == "" || UID == "" {
 		c.String(http.StatusBadRequest, "Missing Parameters")
 		return

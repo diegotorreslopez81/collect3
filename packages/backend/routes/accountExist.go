@@ -10,6 +10,8 @@ import (
 func AccountExist(c *gin.Context) {
 	var payload CreateAccountPayload
 
+	Logger.Info("POST /account_exist")
+
 	err := c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)

@@ -15,6 +15,8 @@ func UploadFile(c *gin.Context) {
 	var err error
 	storageOption := c.Param("storage")
 
+	Logger.Info("POST /:storage/upload", "storage", storageOption)
+
 	err = c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error(

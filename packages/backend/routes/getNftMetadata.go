@@ -25,6 +25,7 @@ func GetNftMetadata(c *gin.Context) {
 	var err error
 
 	cid := c.Param("cid")
+	Logger.Info("/nft/metadata/:cid", "cid", cid)
 
 	adminUser, err := DB.GetUserByID(1)
 	if err != nil {

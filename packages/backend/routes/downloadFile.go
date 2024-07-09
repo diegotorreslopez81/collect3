@@ -18,6 +18,8 @@ func DownloadFile(c *gin.Context) {
 	var file string
 	storageOption := c.Param("storage")
 
+	Logger.Info("POST /:storage/download", "storage", storageOption)
+
 	err = c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)

@@ -23,6 +23,8 @@ func CreateAccount(c *gin.Context) {
 	var response CreateAccountResponse
 	s5Key := GetEnvVar("ADMIN_S5_KEY")
 
+	Logger.Info("POST /create_account")
+
 	err := c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error("Invalid Request Body", "err", err, "req", c.Request.Body)

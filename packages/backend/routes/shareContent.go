@@ -17,6 +17,8 @@ func ShareContent(c *gin.Context) {
 	var payload ShareContentPayload
 	var err error
 
+	Logger.Info("POST /share")
+
 	err = c.BindJSON(&payload)
 	if err != nil {
 		Logger.Error(
